@@ -316,3 +316,48 @@ main{background:radial-gradient(ellipse at 50% 10%,#35231a 0%,#21140f 32%,#110b0
   .service-detail .service-pricing strong{font-size:33px}
   .service-detail>.gold-button{min-height:42px}
 }
+
+/* Mobile overflow fix: prevent sideways page scrolling while preserving
+   animated card carousels inside their own clipped viewports. */
+@media (max-width:1023px) {
+  html {
+    width:100%;
+    max-width:100%;
+    overflow-x:clip;
+  }
+  body, #root, main {
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    overflow-x:clip;
+  }
+  main > section, .site-footer, .site-header {
+    max-width:100%;
+    min-width:0;
+  }
+  .hero, .services-intro, .about-section, .instagram-section,
+  .service-detail, .prices-section, .vouchers-section, .booking-section {
+    max-width:100%;
+    min-width:0;
+  }
+  .marquee-viewport {
+    display:block;
+    width:100%;
+    max-width:100%;
+    overflow:hidden;
+    scrollbar-width:none;
+    overscroll-behavior-x:contain;
+  }
+  .marquee-viewport::-webkit-scrollbar {display:none}
+  .marquee-track {width:max-content;max-width:none}
+  .booking-form, .booking-chooser, .glow-panel,
+  .calendar, .time-grid, .price-row, .footer-shell {
+    min-width:0;
+    max-width:100%;
+  }
+  .menu-overlay {
+    width:100%;
+    max-width:100%;
+    overflow-x:hidden;
+  }
+}
