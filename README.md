@@ -1,16 +1,20 @@
 # Deluxe Brow Studio
 
-Premium dark-and-gold, mobile-first React + Vite website, matching the six owner-supplied mockups.
+React 18 + Vite 6 + CSS, mobile-first premium black-and-gold design matched to the approved screen references.
 
-## Real local media
+## Content and functionality
 
-Eight optimized images from the user-uploaded source photos and Instagram stories now live under `public/images`, including the **original Deluxe logo**, portrait of Anastasia, authentic on-the-job photo, actual brow treatment example photos, and tools.
+- Full phone-viewport hero with real artist-at-work photo, responsive typography, both CTAs and all three features.
+- Smaller glowing original brand logo, rotating gold halo and subtle permanent gradient animations.
+- Full-viewport dropdown navigation with body scroll lock, close / Escape support.
+- Services: six AI-generated eyebrow photos (two each for correction, tinting, lamination), continuous slow marquee, pointer-hold pause and full-screen lightbox.
+- Instagram: continuous slow marquee featuring genuine supplied studio images plus clearly marked AI example imagery.
+- Three interactive before/after draggable comparisons with AI-generated split-image pairs. These are **illustrations**, not real client outcomes.
+- Mobile-friendly three-row price cards and gift card.
+- Booking form with name, phone or email, service, future date, time and optional message. Netlify Forms receives form data; fields reset only following HTTP 2xx response. The chosen time is a request, not confirmed availability.
+- All image assets served locally from `public/images/`, including nine optimized image-generation assets.
 
-The real logo is shown through a circular CSS mask and animated with a slow rotating gold-gradient halo (23 s). Gold buttons shimmer gently (16 s). The Services rail scrolls continuously and seamlessly (135 s, slower on mobile). All hover/focus transitions are deliberately soft. Reduced-motion preferences are respected.
-
-Note: the story photo pair from the blue-eyed client shows *lamination + tinting*. The green-eyed story is an additional example, but treatment attribution needs owner confirmation. Obtain owner/client approval for public use.
-
-## Run
+## Deployment
 
 ```bash
 npm install
@@ -18,11 +22,11 @@ npm run dev
 npm run build
 ```
 
-For Netlify, `netlify.toml` runs `npm run build` and publishes `dist`.
+Netlify: existing `netlify.toml` sets `npm run build`, publish `dist`, Node 22. The hidden HTML form in `index.html` enables Netlify form detection. Visit Netlify dashboard → Forms to inspect submissions; enable notifications as appropriate.
 
-## Before commercial launch
+## Owner approval and commercial/legal checks
 
-- Confirm the correct service prices. **The latest Instagram price list shows different amounts** than the original concept screenshots. The displayed €30/€40/€60 and 30% Christmas/New Year special still match mockups but are **not verified live offers**.
-- Confirm validity dates, photo usage rights and service attribution.
-- Booking calendar is a *request interface*, not live availability; Instagram opens for sending manually.
-- Confirm full address, contact details and required legal/privacy information.
+- Mockup prices 30/40/60 € and holiday 30% promotion are **not confirmed actual prices or valid offers**. A real Instagram price list previously provided by the owner differs. Verify and replace before making this a public commercial site.
+- The generated before/after results are AI demonstrations, not genuine treatment evidence; never claim otherwise.
+- Owner must approve use of real photos and confirm client consent for any genuine treatment results.
+- Review Impressum, Datenschutzerklärung and forms-related GDPR obligations before commercial launch.
