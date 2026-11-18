@@ -30,3 +30,10 @@ Netlify: existing `netlify.toml` sets `npm run build`, publish `dist`, Node 22. 
 - The generated before/after results are AI demonstrations, not genuine treatment evidence; never claim otherwise.
 - Owner must approve use of real photos and confirm client consent for any genuine treatment results.
 - Review Impressum, Datenschutzerklärung and forms-related GDPR obligations before commercial launch.
+
+## Visual/interaction refinements
+
+- Golden ring rotates extremely slowly (180s) and glow softly pulses (42s). Buttons shimmer over 65s with reduced contrast, not flashing.
+- Both galleries use frame-time-corrected requestAnimationFrame motion at 11-13 px/s, seamless duplicated groups, pause on pointer hold/hover/focus, lightbox on tap.
+- Before/after comparisons preserve the generated composite half-photo's native 2:3 ratio, preventing horizontal stretching. The range slider still adjusts the split.
+- Form clears all values on confirmed successful POST only. Failed POST retains inputs for a retry, preventing accidental data loss.

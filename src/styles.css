@@ -18,3 +18,42 @@ footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-arou
 @media(max-width:390px){.hero h1{font-size:clamp(40px,11.5vw,51px)}.hero-copy p{font-size:10px}.hero-features span{font-size:8px}.hero-features svg{height:19px;width:19px}.hero-features{padding:8px 2px}.hero-copy>.gold-button,.hero-copy>.outline-button{min-height:43px;font-size:12px}.heart-divider{margin:0 auto 2px}.brand{width:72px;height:72px}.price-row h3{font-size:20px}.price-values strong{font-size:30px}.promo-badge{font-size:11px}}
 @media(max-height:730px) and (max-width:700px){.site-header{height:84px}.brand{width:66px;height:66px;top:13px}.hero-copy{gap:7px}.hero h1{font-size:clamp(37px,10vw,53px)}.hero-copy p{font-size:10px}.hero-copy>.gold-button,.hero-copy>.outline-button{min-height:42px;font-size:12px}.hero-features{margin:5px auto 7px;padding:5px}.hero-features svg{height:18px;width:18px}.hero-features span{font-size:8px}.hero-spacer{min-height:78px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}.marquee-viewport{overflow-x:auto;mask-image:none;-webkit-mask-image:none}.marquee-track{animation:none!important}}
+
+
+/* Visual refinements, 2026-11-18: gentle gold light, contrast and true photo proportions. */
+:root{--gold:#edba78;--gold-bright:#ffe8b3}
+main{background:radial-gradient(ellipse at 50% 10%,#35231a 0%,#21140f 32%,#110b09 72%,#0e0907 100%)}
+.hero-bg{filter:brightness(.99) contrast(1.1) saturate(1.03)}
+.hero-shade{background:linear-gradient(90deg,#09060686,transparent 22%,transparent 80%,#0906067d),linear-gradient(180deg,#0c08083d 0%,transparent 26%,#100a0866 62%,#0c0807e9 100%)}
+.glow-panel{background:linear-gradient(135deg,#5a3c2cb5,#251810e8 55%,#483023ba);border-color:#daa360;box-shadow:0 0 15px #d89a4e65,inset 0 1px 2px #fff0c579}
+.service-detail{background:radial-gradient(ellipse at 50% 15%,#423025,#1e120d 55%,#0e0907 95%)}
+.services-intro{background:radial-gradient(ellipse at center,#3d291c,#110a07 78%)}
+.about-section{background:radial-gradient(ellipse at 60% 0%,#53341f,#160c09 68%)}
+.prices-section{background:radial-gradient(ellipse at center,#463020,#120c09 75%)}
+.booking-section{background:radial-gradient(ellipse at 50% 42%,#453020,#110b09 83%)}
+.brand:before{animation-duration:180s;box-shadow:0 0 16px #e9b9719c,0 0 33px #dc9b4c82}
+.brand:after{animation-duration:42s;box-shadow:0 0 29px #efb86988,0 0 49px #d28c4080}
+@keyframes ring-pulse{0%,100%{opacity:.79;transform:scale(1)}50%{opacity:.97;transform:scale(1.018)}}
+.gold-button{background:linear-gradient(110deg,#b87c3d,#e6b878,#f9dea7,#deb276,#f7dba4,#b87c3d);background-size:220% 220%;animation-duration:65s;box-shadow:0 0 9px #efbd79a8,0 0 19px #cb924f77,inset 0 2px 4px #fff3cb}
+.outline-button{transition:transform 1.3s ease,box-shadow 1.3s ease,background-color 1.3s ease;box-shadow:0 0 11px #e0a45866}
+.gold-button,.outline-button{transition:transform 1.3s ease,box-shadow 1.3s ease,filter 1.3s ease}
+@keyframes gold-shimmer{0%,100%{background-position:25% 50%}50%{background-position:75% 50%}}
+/* JavaScript, frame-rate-independent carousel. Motion stops on press/hover/focus. */
+.marquee-track{animation:none!important;transform:translate3d(0,0,0);will-change:transform}
+.marquee-viewport{scrollbar-width:none}
+.marquee-viewport::-webkit-scrollbar{display:none}
+/* One side of the 4:3 source is 2:3. Preserve its native aspect, not 1.9:1. */
+.comparison{width:min(100%,480px);aspect-ratio:2/3;min-height:0}
+.comparison-half{background-size:200% 100%;background-repeat:no-repeat}
+.comparison-before{background-position:left center}
+.comparison-after{background-position:right center}
+.comparison input[type=range]{touch-action:pan-x}
+@media(max-width:700px){
+ .comparison{width:min(100%,425px);aspect-ratio:2/3}
+ .comparison-label{font-size:21px}
+ .hero-bg{filter:brightness(1.03) contrast(1.07) saturate(1.03)}
+}
+@media(prefers-reduced-motion:reduce){
+ .brand:before,.brand:after,.gold-button{animation:none!important}
+ .marquee-viewport{overflow-x:auto;mask-image:none;-webkit-mask-image:none}
+}

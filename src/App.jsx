@@ -53,10 +53,48 @@ function Lightbox({item,onClose}){
  return <div className="lightbox" role="dialog" aria-modal="true" aria-label={item.label} onClick={onClose}><button aria-label="Bild schließen" className="lightbox-close" onClick={onClose}><X/></button><img src={item.src} alt={item.label} onClick={e=>e.stopPropagation()}/><p>{item.label} · {item.generated?'KI-Visualisierung':'Foto aus dem Studio'}</p></div>
 }
 function Marquee({items,kind='services',duration='145s',onImageClick}){
- const[paused,setPaused]=useState(false);
- return <div className={'marquee-viewport marquee-'+kind} onPointerDown={()=>setPaused(true)} onPointerUp={()=>setPaused(false)} onPointerCancel={()=>setPaused(false)} onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)} onFocusCapture={()=>setPaused(true)} onBlurCapture={()=>setPaused(false)}>
-   <div className="marquee-track" style={{'--marquee-duration':duration,animationPlayState:paused?'paused':'running'}}>{[0,1].map(repeat=><div className="marquee-group" key={repeat} aria-hidden={repeat===1?'true':undefined}>{items.map((item,i)=><button className="marquee-item" key={i} tabIndex={repeat===1?-1:0} type="button" onClick={()=>onImageClick(item)} aria-label={item.label+' vergrößern'}><img loading="lazy" src={item.src} alt={repeat===1?'':item.label}/><span>{item.label}</span><Maximize2 size={16} className="zoom-icon"/></button>)}</div>)}</div>
- </div>;
+ const trackRef=useRef(null);
+ const frameRef=useRef(0);
+ const offsetRef=useRef(0);
+ const pausedRef=useRef(false);
+ const [paused,setPaused]=useState(false);
+ useEffect(()=>{
+  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
+  let previous=0;
+  const speed=kind==='instagram'?11:13;
+  const tick=(time)=>{
+   const track=trackRef.current;
+   if(track && !reduced.matches && !pausedRef.current && !document.hidden){
+    const halfWidth=track.scrollWidth/2;
+    if(halfWidth>0){
+     const delta=previous?Math.min(time-previous,60):0;
+     offsetRef.current=(offsetRef.current+delta*speed/1000)%halfWidth;
+     track.style.transform='translate3d('+(-offsetRef.current)+'px,0,0)';
+    }
+   }
+   previous=time;
+   frameRef.current=requestAnimationFrame(tick);
+  };
+  frameRef.current=requestAnimationFrame(tick);
+  return ()=>cancelAnimationFrame(frameRef.current);
+ },[kind,items.length]);
+ const pause=()=>{pausedRef.current=true;setPaused(true)};
+ const resume=()=>{pausedRef.current=false;setPaused(false)};
+ return <div className={'marquee-viewport marquee-'+kind+(paused?' is-paused':'')}
+    onPointerDown={pause} onPointerUp={resume} onPointerCancel={resume}
+    onPointerLeave={resume} onMouseEnter={pause} onMouseLeave={resume}
+    onFocusCapture={pause} onBlurCapture={resume}>
+   <div className="marquee-track" ref={trackRef}>
+    {[0,1].map(repeat=><div className="marquee-group" key={repeat} aria-hidden={repeat===1?'true':undefined}>
+     {items.map((item,i)=><button className="marquee-item" key={i} type="button"
+       tabIndex={repeat===1?-1:0} onClick={()=>onImageClick(item)}
+       aria-label={item.label+' vergrößern'}>
+       <img loading="lazy" src={item.src} alt={repeat===1?'':item.label}/>
+       <span>{item.label}</span><Maximize2 size={16} className="zoom-icon"/>
+      </button>)}
+    </div>)}
+   </div>
+  </div>;
 }
 function Services({openImage}){
  const items=SERVICES.flatMap(s=>s.images.map(src=>({src,label:s.name,generated:true})));
