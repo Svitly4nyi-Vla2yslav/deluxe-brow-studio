@@ -28,17 +28,37 @@ function GoldButton({children,href='#booking',onClick,outline=false}) {return <a
 function Divider(){return <div className="heart-divider" aria-hidden="true"><span/><Heart size={22}/><span/></div>}
 function SectionLabel({children}){return <div className="section-label"><span/>{children}<span/></div>}
 function Header(){
- const [open,setOpen]=useState(false);const closeRef=useRef(null);
- useEffect(()=>{if(!open)return;const old=document.body.style.overflow;document.body.style.overflow='hidden';const escape=e=>{if(e.key==='Escape')setOpen(false)};document.addEventListener('keydown',escape);closeRef.current?.focus();return()=>{document.body.style.overflow=old;document.removeEventListener('keydown',escape)}},[open]);
+ const [open,setOpen]=useState(false);
+ const closeRef=useRef(null);
+ useEffect(()=>{
+  if(!open)return;
+  const old=document.body.style.overflow;
+  document.body.style.overflow='hidden';
+  const escape=e=>{if(e.key==='Escape')setOpen(false)};
+  document.addEventListener('keydown',escape);
+  closeRef.current?.focus();
+  return ()=>{document.body.style.overflow=old;document.removeEventListener('keydown',escape)};
+ },[open]);
+ const navigation=[['services','Leistungen'],['about','Über uns'],['instagram','Instagram'],['preise','Preise'],['gutscheine','Gutscheine'],['booking','Kontakt']];
  return <>
- <header className="site-header"><button type="button" className="header-control" aria-label="Menü öffnen" aria-expanded={open} onClick={()=>setOpen(true)}><Menu/></button><Logo/><a className="header-control" aria-label="Zum Kalender" href="#booking"><CalendarDays/></a></header>
- <div className={'menu-overlay'+(open?' is-open':'')} role="dialog" aria-modal="true" aria-label="Hauptmenü" aria-hidden={!open}>
+  <header className="site-header">
+   <button type="button" className="header-control mobile-menu-toggle" aria-label="Menü öffnen" aria-expanded={open} onClick={()=>setOpen(true)}><Menu/></button>
+   <Logo/>
+   <nav className="desktop-nav" aria-label="Hauptnavigation">
+    {navigation.map(([id,label])=><a key={id} href={'#'+id}>{label}</a>)}
+   </nav>
+   <a className="header-control mobile-calendar-toggle" aria-label="Zum Kalender" href="#booking"><CalendarDays/></a>
+   <a className="desktop-book-button" href="#booking"><CalendarDays size={17}/> Termin buchen <ArrowRight size={16}/></a>
+  </header>
+  <div className={'menu-overlay'+(open?' is-open':'')} role="dialog" aria-modal="true" aria-label="Hauptmenü" aria-hidden={!open}>
    <div className="menu-photo"/>
    <button type="button" ref={closeRef} className="menu-close" aria-label="Menü schließen" onClick={()=>setOpen(false)}><X/></button>
    <div className="menu-inner"><Logo onClick={()=>setOpen(false)}/>
-   <nav className="menu-links">{[['home','Start'],['services','Leistungen'],['instagram','Instagram'],['preise','Preise & Weihnachtsrabatt'],['gutscheine','Gutscheine'],['about','Über Anastasia'],['booking','Termin buchen'],['contact','Kontakt']].map(([id,label])=><a key={id} href={'#'+id} onClick={()=>setOpen(false)} className={id==='booking'?'menu-book':''}>{label}</a>)}</nav>
+    <nav className="menu-links">
+     {([['home','Start'],...navigation]).map(([id,label])=><a key={id} href={'#'+id} onClick={()=>setOpen(false)} className={id==='booking'?'menu-book':''}>{label}</a>)}
+    </nav>
    </div>
- </div>
+  </div>
  </>;
 }
 function Hero(){return <section id="home" className="hero">
@@ -52,49 +72,33 @@ function Lightbox({item,onClose}){
  useEffect(()=>{const old=document.body.style.overflow;document.body.style.overflow='hidden';const fn=e=>{if(e.key==='Escape')onClose()};document.addEventListener('keydown',fn);return()=>{document.body.style.overflow=old;document.removeEventListener('keydown',fn)}},[onClose]);
  return <div className="lightbox" role="dialog" aria-modal="true" aria-label={item.label} onClick={onClose}><button aria-label="Bild schließen" className="lightbox-close" onClick={onClose}><X/></button><img src={item.src} alt={item.label} onClick={e=>e.stopPropagation()}/><p>{item.label} · {item.generated?'KI-Visualisierung':'Foto aus dem Studio'}</p></div>
 }
-function Marquee({items,kind='services',duration='145s',onImageClick}){
- const trackRef=useRef(null);
- const frameRef=useRef(0);
- const offsetRef=useRef(0);
- const pausedRef=useRef(false);
- const [paused,setPaused]=useState(false);
+function Marquee({items,kind='services',onImageClick}){
+ const [holding,setHolding]=useState(false);
  useEffect(()=>{
-  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
-  let previous=0;
-  const speed=kind==='instagram'?11:13;
-  const tick=(time)=>{
-   const track=trackRef.current;
-   if(track && !reduced.matches && !pausedRef.current && !document.hidden){
-    const halfWidth=track.scrollWidth/2;
-    if(halfWidth>0){
-     const delta=previous?Math.min(time-previous,60):0;
-     offsetRef.current=(offsetRef.current+delta*speed/1000)%halfWidth;
-     track.style.transform='translate3d('+(-offsetRef.current)+'px,0,0)';
-    }
-   }
-   previous=time;
-   frameRef.current=requestAnimationFrame(tick);
+  const release=()=>setHolding(false);
+  window.addEventListener('pointerup',release);
+  window.addEventListener('pointercancel',release);
+  window.addEventListener('blur',release);
+  return ()=>{
+   window.removeEventListener('pointerup',release);
+   window.removeEventListener('pointercancel',release);
+   window.removeEventListener('blur',release);
   };
-  frameRef.current=requestAnimationFrame(tick);
-  return ()=>cancelAnimationFrame(frameRef.current);
- },[kind,items.length]);
- const pause=()=>{pausedRef.current=true;setPaused(true)};
- const resume=()=>{pausedRef.current=false;setPaused(false)};
- return <div className={'marquee-viewport marquee-'+kind+(paused?' is-paused':'')}
-    onPointerDown={pause} onPointerUp={resume} onPointerCancel={resume}
-    onPointerLeave={resume} onMouseEnter={pause} onMouseLeave={resume}
-    onFocusCapture={pause} onBlurCapture={resume}>
-   <div className="marquee-track" ref={trackRef}>
-    {[0,1].map(repeat=><div className="marquee-group" key={repeat} aria-hidden={repeat===1?'true':undefined}>
-     {items.map((item,i)=><button className="marquee-item" key={i} type="button"
-       tabIndex={repeat===1?-1:0} onClick={()=>onImageClick(item)}
-       aria-label={item.label+' vergrößern'}>
-       <img loading="lazy" src={item.src} alt={repeat===1?'':item.label}/>
-       <span>{item.label}</span><Maximize2 size={16} className="zoom-icon"/>
-      </button>)}
-    </div>)}
-   </div>
-  </div>;
+ },[]);
+ return <div className={'marquee-viewport marquee-'+kind+(holding?' is-paused':'')}
+  aria-label={kind==='instagram'?'Instagram Fotogalerie':'Fotogalerie der Behandlungen'}
+  onPointerDown={()=>setHolding(true)} onPointerCancel={()=>setHolding(false)}>
+  <div className="marquee-track">
+   {[0,1].map(repeat=><div className="marquee-group" key={repeat} aria-hidden={repeat===1?'true':undefined}>
+    {items.map((item,i)=><button className="marquee-item" type="button" key={i}
+     tabIndex={repeat===1?-1:0} onClick={()=>onImageClick(item)}
+     aria-label={item.label+' vergrößern'}>
+     <img loading="lazy" src={item.src} alt={repeat===1?'':item.label}/>
+     <span>{item.label}</span><Maximize2 size={16} className="zoom-icon"/>
+    </button>)}
+   </div>)}
+  </div>
+ </div>;
 }
 function Services({openImage}){
  const items=SERVICES.flatMap(s=>s.images.map(src=>({src,label:s.name,generated:true})));
@@ -146,7 +150,23 @@ function Booking({picked}){
  };
  return <section id="booking" className="booking-section"><h2>Termin buchen</h2><Divider/><form name="booking" className="booking-form glow-panel" onSubmit={submit}><input type="hidden" name="form-name" value="booking"/><label><UserRound/> Name *<input name="name" placeholder="Ihr vollständiger Name" autoComplete="name" value={name} onChange={e=>setName(e.target.value)} required maxLength={100}/></label><label><Mail/> Telefonnummer oder E-Mail *<input name="contact" placeholder="+49 151 12345678 oder name@beispiel.de" value={contact} onChange={e=>setContact(e.target.value)} required maxLength={150}/></label><label><Layers/> Leistung *<select name="service" value={service} onChange={e=>setService(e.target.value)} required><option value="">Bitte Leistung auswählen</option>{SERVICES.map(s=><option key={s.id} value={s.name}>{s.name}</option>)}</select></label><div className="booking-chooser"><div><div className="chooser-title"><CalendarDays/> Datum *</div><Calendar date={date} setDate={d=>{setDate(d);setTime('')}} month={month} setMonth={d=>{setMonth(d);setDate('');setTime('')}}/></div><div><div className="chooser-title"><Clock3/> Uhrzeit *</div><div className="time-grid">{times.map(slot=><button type="button" key={slot} disabled={!date} className={time===slot?'selected':''} onClick={()=>setTime(slot)}>{slot}</button>)}</div></div></div><label><Send/> Nachricht (optional)<textarea name="message" value={message} onChange={e=>setMessage(e.target.value)} maxLength={500} rows={3} placeholder="Wünsche, Hinweise oder Fragen ..."/></label><button disabled={sending} className="gold-button submit-button" type="submit"><Send size={20}/>{sending?'Wird gesendet ...':'Anfrage senden'}</button>{status&&<p role="status" className="form-status">{status}</p>}<p className="form-footnote">Nach erfolgreichem Senden werden alle Felder und die Terminauswahl zurückgesetzt. Angezeigte Zeiten sind unverbindliche Wunschzeiten, keine Live-Verfügbarkeit.</p></form></section>
 }
-function Footer(){return <footer id="contact"><a href={IG} target="_blank" rel="noreferrer"><Instagram/> @deluxe.browstudio</a><span><MapPin/> Hildesheim, Germany</span><small>© {new Date().getFullYear()} Deluxe Brow Studio · Konzeptansicht</small></footer>}
+function Footer(){return <footer id="contact" className="site-footer">
+ <div className="footer-shell">
+  <div className="footer-branding">
+   <a className="footer-logo" href="#home"><img src={IMG.logo} alt="Deluxe Brow Studio"/></a>
+   <div><h2>Deluxe Brow Studio</h2><p>Perfekte Brows mit Stil. Schönheit und präzise Brow-Behandlungen in Hildesheim.</p></div>
+  </div>
+  <nav className="footer-links" aria-label="Footer Navigation">
+   <h3>Entdecken</h3><a href="#services">Leistungen</a><a href="#about">Über Anastasia</a><a href="#preise">Preise</a><a href="#gutscheine">Gutscheine</a>
+  </nav>
+  <div className="footer-contact"><h3>Kontakt</h3>
+   <a href={IG} target="_blank" rel="noreferrer"><Instagram size={19}/> @deluxe.browstudio</a>
+   <span><MapPin size={19}/> Hildesheim, Germany</span>
+   <a className="footer-book" href="#booking"><CalendarDays size={19}/> Termin anfragen <ArrowRight size={16}/></a>
+  </div>
+ </div>
+ <div className="footer-bottom"><span>© {new Date().getFullYear()} Deluxe Brow Studio · Konzeptansicht</span><a href="#home">Zurück nach oben ↑</a></div>
+ </footer>}
 export default function App(){
  const[lightbox,setLightbox]=useState(null),[selectedService,setSelectedService]=useState('');
  return <><Header/><main><Hero/><Services openImage={setLightbox}/><About openImage={setLightbox}/>{SERVICES.map(s=><ServiceSection key={s.id} service={s} onBook={setSelectedService}/>)}<Prices onBook={setSelectedService}/><Vouchers/><Booking picked={selectedService}/><Footer/></main>{lightbox&&<Lightbox item={lightbox} onClose={()=>setLightbox(null)}/>}</>
