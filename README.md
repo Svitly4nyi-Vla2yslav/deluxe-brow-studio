@@ -37,3 +37,11 @@ Netlify: existing `netlify.toml` sets `npm run build`, publish `dist`, Node 22. 
 - Both galleries use frame-time-corrected requestAnimationFrame motion at 11-13 px/s, seamless duplicated groups, pause on pointer hold/hover/focus, lightbox on tap.
 - Before/after comparisons preserve the generated composite half-photo's native 2:3 ratio, preventing horizontal stretching. The range slider still adjusts the split.
 - Form clears all values on confirmed successful POST only. Failed POST retains inputs for a retry, preventing accidental data loss.
+
+## Hero imagery and carousel (latest)
+
+- `public/images/hero-mobile.jpg`: newly regenerated portrait asset for narrow viewports.
+- `public/images/hero-desktop.jpg`: newly regenerated landscape asset, with negative space on the left for the desktop heading.
+- The hero uses a responsive `<picture>` element with the 1024px breakpoint. Images are clipped with `object-fit: cover`, never stretched.
+- The services and Instagram galleries slide **from left to right**, repeating seamlessly; their CSS motion is explicitly overridden to avoid previous conflicting animations. Press and hold to pause, release to resume.
+- Note: hero pictures are **AI-generated visualizations based on a supplied studio photo**, not untouched documentary photographs.

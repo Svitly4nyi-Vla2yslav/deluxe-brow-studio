@@ -224,3 +224,36 @@ main{background:radial-gradient(ellipse at 50% 10%,#35231a 0%,#21140f 32%,#110b0
  .marquee-track,.marquee-instagram .marquee-track{animation:none!important}
  .marquee-viewport{overflow-x:auto}
 }
+
+
+/* New portrait and landscape hero art. Both retain their native aspect ratio;
+   object-fit crops at viewport dimensions without stretching. */
+.hero-picture{position:absolute;inset:0;z-index:-3;display:block;overflow:hidden}
+.hero-picture .hero-bg{position:absolute;inset:0;width:100%;height:79%;z-index:0;object-fit:cover;object-position:center 36%;filter:brightness(.99) contrast(1.08) saturate(.97)}
+@media (min-width:1024px){
+ .hero-picture .hero-bg{height:100%;object-fit:cover;object-position:center 34%;filter:brightness(1.02) contrast(1.05) saturate(.99)}
+}
+/* Endless movement from LEFT to RIGHT. Start at the identical second half
+   and translate to first half, yielding a seamless repeat. */
+@keyframes deluxe-marquee-to-right{
+ from{transform:translate3d(-50%,0,0)}
+ to{transform:translate3d(0,0,0)}
+}
+.marquee-viewport .marquee-track{
+ animation-name:deluxe-marquee-to-right!important;
+ animation-duration:74s!important;
+ animation-timing-function:linear!important;
+ animation-iteration-count:infinite!important;
+ animation-direction:normal!important;
+ animation-play-state:running!important;
+}
+.marquee-viewport.is-paused .marquee-track{animation-play-state:paused!important}
+.marquee-instagram .marquee-track{animation-duration:94s!important}
+@media(max-width:740px){
+ .marquee-viewport .marquee-track{animation-duration:85s!important}
+ .marquee-instagram .marquee-track{animation-duration:105s!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .marquee-viewport .marquee-track{animation:none!important;transform:none!important}
+ .marquee-viewport{overflow-x:auto;mask-image:none;-webkit-mask-image:none}
+}

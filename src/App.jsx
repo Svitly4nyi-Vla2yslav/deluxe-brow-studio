@@ -62,7 +62,10 @@ function Header(){
  </>;
 }
 function Hero(){return <section id="home" className="hero">
-   <img className="hero-bg" src={IMG.hero} alt="Anastasia bei einer Augenbrauenbehandlung" fetchPriority="high"/>
+   <picture className="hero-picture">
+    <source media="(min-width: 1024px)" srcSet="/images/hero-desktop.jpg"/>
+    <img className="hero-bg" src="/images/hero-mobile.jpg" alt="Brow Artist bei einer Augenbrauenbehandlung – KI-optimiertes Fotomotiv" fetchPriority="high" decoding="async"/>
+   </picture>
    <div className="hero-shade" aria-hidden="true"/>
    <div className="hero-spacer"/>
    <div className="hero-copy"><h1>Perfekte Brows<br/><em>mit Stil.</em></h1><p>Augenbrauenkorrektur, Augenbrauenfärben &amp;<br className="hero-break"/> Augenbrauenlaminierung in Hildesheim.</p><Divider/><GoldButton>Termin buchen</GoldButton><GoldButton outline href={IG}> <Instagram size={18}/> Instagram ansehen</GoldButton></div>
