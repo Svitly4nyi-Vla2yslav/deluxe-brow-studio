@@ -6,7 +6,7 @@ const IG = 'https://www.instagram.com/deluxe.browstudio/';
 const IMG = {
   hero: '/images/hero.jpg',
   artist: '/images/artist.jpg',
-  logo: '/images/logo.jpg',
+  logo: '/images/logo-transparent.png',
   tools: '/images/tools.jpg',
 };
 const SERVICES = [

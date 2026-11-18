@@ -5,16 +5,27 @@ import sharp from 'sharp';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const dir = join(root, 'public');
-const sourceLogo = join(dir, 'images', 'logo.jpg');
+const sourceLogo = join(dir, 'images', 'logo-transparent.png');
 const origin = (process.env.VITE_SITE_URL || process.env.URL || '').trim().replace(/\/$/, '');
 await mkdir(dir, { recursive: true });
 
-// Use the actual studio logo, never a replacement monogram.
+// The approved circular Deluxe logo retains transparent corners in every icon.
+// Do not flatten PNG on a background colour.
+const circleMask = (size) => Buffer.from(
+  '<svg width="'+size+'" height="'+size+'" xmlns="http://www.w3.org/2000/svg">' +
+  '<circle cx="'+(size/2)+'" cy="'+(size/2)+'" r="'+(size*0.486)+'" fill="#fff"/>' +
+  '</svg>'
+);
 for (const size of [32, 48, 180, 192, 512]) {
   const filename = size === 180 ? 'apple-touch-icon.png'
     : size < 100 ? 'favicon-' + size + '.png'
     : 'icon-' + size + '.png';
-  await sharp(sourceLogo).resize(size, size, {fit:'cover',position:'centre'}).png().toFile(join(dir,filename));
+  const resized = await sharp(sourceLogo)
+    .ensureAlpha()
+    .resize(size,size,{fit:'contain',background:{r:0,g:0,b:0,alpha:0}})
+    .png().toBuffer();
+  await sharp(resized).composite([{input:circleMask(size),blend:'dest-in'}])
+    .png().toFile(join(dir,filename));
 }
 const svg = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630">
 <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#261810"/><stop offset=".6" stop-color="#100b09"/><stop offset="1" stop-color="#3b2619"/></linearGradient><linearGradient id="gold" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#a77438"/><stop offset=".45" stop-color="#ffe2ab"/><stop offset="1" stop-color="#c68a45"/></linearGradient></defs>
@@ -28,13 +39,13 @@ const svg = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="1200" he
 <text x="636" y="431" font-size="20" font-family="Arial,sans-serif" fill="#efdbba">Färben &amp; Laminierung</text>
 <text x="636" y="504" font-size="22" font-family="Arial,sans-serif" fill="#edbd7b">Hildesheim · Brow Artist Anastasia</text>
 </svg>`);
-const logoBuffer = await sharp(sourceLogo).resize(468,468,{fit:'cover'}).png().toBuffer();
+const logoBuffer = await sharp(sourceLogo).resize(468,468,{fit:'contain',background:{r:0,g:0,b:0,alpha:0}}).png().toBuffer();
 await sharp(svg).composite([{input:logoBuffer,left:66,top:80}]).jpeg({quality:89,mozjpeg:true}).toFile(join(dir,'og-deluxe.jpg'));
 await writeFile(join(dir,'site.webmanifest'),JSON.stringify({
  name:'Deluxe Brow Studio',short_name:'Deluxe Brow Studio',
  description:'Augenbrauenstudio in Hildesheim',
  start_url:'/',display:'browser',background_color:'#100b09',theme_color:'#100b09',
- icons:[{src:'/icon-192.png',sizes:'192x192',type:'image/png'},{src:'/icon-512.png',sizes:'512x512',type:'image/png'}]
+ icons:[{src:'/icon-192.png?v=3',sizes:'192x192',type:'image/png',purpose:'any'},{src:'/icon-512.png?v=3',sizes:'512x512',type:'image/png',purpose:'any'}]
 },null,2)+'\n');
 await writeFile(join(dir,'robots.txt'),'User-agent: *\nAllow: /\n'+(origin?'Sitemap: '+origin+'/sitemap.xml\n':''));
 if (origin) await writeFile(join(dir,'sitemap.xml'),'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>'+origin+'/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url></urlset>\n');
