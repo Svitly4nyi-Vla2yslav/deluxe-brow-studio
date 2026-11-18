@@ -45,3 +45,11 @@ Netlify: existing `netlify.toml` sets `npm run build`, publish `dist`, Node 22. 
 - The hero uses a responsive `<picture>` element with the 1024px breakpoint. Images are clipped with `object-fit: cover`, never stretched.
 - The services and Instagram galleries slide **from left to right**, repeating seamlessly; their CSS motion is explicitly overridden to avoid previous conflicting animations. Press and hold to pause, release to resume.
 - Note: hero pictures are **AI-generated visualizations based on a supplied studio photo**, not untouched documentary photographs.
+
+## Desktop full-screen sections and social sharing
+
+- Desktop hero and each interactive service comparison section fit one full viewport. Images are cropped without stretching; **mobile layout unchanged**.
+- Original brand logo is used to generate a PNG favicon, 180px Apple Touch Icon, 192/512px manifest icons, and a 1200×630 branded social-share image at build time.
+- `vite.config.js` injects Open Graph, Twitter Cards, structured BeautySalon data, and canonical tags using Netlify's `URL` build environment variable. Set `VITE_SITE_URL` in Netlify environment settings when a custom primary domain should take precedence.
+- `robots.txt` and `sitemap.xml` are generated from the same canonical URL. Avoid inventing a domain when local builds lack the URL.
+- Google search-result thumbnails are ultimately chosen by Google. Valid structured metadata and favicon are provided but cannot force a specific display.

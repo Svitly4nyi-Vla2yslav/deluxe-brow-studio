@@ -257,3 +257,62 @@ main{background:radial-gradient(ellipse at 50% 10%,#35231a 0%,#21140f 32%,#110b0
  .marquee-viewport .marquee-track{animation:none!important;transform:none!important}
  .marquee-viewport{overflow-x:auto;mask-image:none;-webkit-mask-image:none}
 }
+
+
+/* Full-viewport desktop presentation, without changing mobile layout. */
+@media (min-width:1024px){
+  body,main{max-width:none;width:100%}
+  .site-header{width:100%;max-width:none}
+  .hero{height:100vh;height:100svh;min-height:0;max-height:100svh}
+  .hero-copy{gap:clamp(10px,1.8vh,22px)}
+  .hero h1{font-size:clamp(64px,7.4vw,125px)}
+  .hero-features{bottom:clamp(14px,2.4vh,32px)}
+  .service-detail{
+    height:100vh;height:100svh;min-height:0;max-height:100svh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:clamp(88px,11vh,120px) 3vw 18px;
+    overflow:hidden;
+  }
+  .service-detail h2{font-size:clamp(46px,4.1vw,70px);line-height:1.03}
+  .service-detail .italic-subtitle{font-size:clamp(17px,1.6vw,23px);line-height:1.25;margin:7px auto 8px}
+  .service-detail .heart-divider{margin:6px auto 13px;max-width:330px}
+  .service-detail .comparison{
+    flex:0 0 auto;width:min(40vw,460px);
+    height:min(26vh,26svh,250px);min-height:0;aspect-ratio:auto;
+    border-radius:18px;
+  }
+  /* Crop from the original source halves rather than stretching a portrait into a wide box. */
+  .service-detail .comparison-half{background-size:200% auto;background-repeat:no-repeat}
+  .service-detail .comparison-before{background-position:left 47%}
+  .service-detail .comparison-after{background-position:right 47%}
+  .service-detail .visual-note{margin:7px auto 9px;font-size:9px;line-height:1.25}
+  .service-detail .service-benefits{
+    width:min(100%,760px);max-width:760px;
+    margin:8px auto 9px;padding:9px 12px;border-radius:18px;
+  }
+  .service-detail .service-benefits>div{padding:3px 9px;gap:9px}
+  .service-detail .service-benefits svg{width:23px;height:23px}
+  .service-detail .service-benefits span{font-size:clamp(15px,1.3vw,18px);line-height:1.2}
+  .service-detail .service-pricing{
+    width:min(100%,760px);max-width:760px;
+    padding:8px 15px;margin:4px auto 10px;border-radius:18px;
+  }
+  .service-detail .service-pricing span{font-size:clamp(18px,1.8vw,23px)}
+  .service-detail .service-pricing del{font-size:23px}
+  .service-detail .service-pricing strong{font-size:clamp(34px,3.3vw,46px)}
+  .service-detail .service-pricing b{font-size:14px;padding:7px 12px}
+  .service-detail>.gold-button{width:min(100%,600px);min-height:47px;font-size:15px;flex-shrink:0}
+  .comparison-label{font-size:18px}
+  .comparison-handle span{width:39px;height:39px}
+}
+@media (min-width:1024px) and (max-height:750px){
+  .service-detail{padding-top:83px;padding-bottom:9px}
+  .service-detail h2{font-size:clamp(39px,3.7vw,55px)}
+  .service-detail .italic-subtitle{font-size:16px;margin:4px auto}
+  .service-detail .heart-divider{margin:3px auto 7px}
+  .service-detail .comparison{height:min(23svh,165px)}
+  .service-detail .service-benefits{margin:5px auto;padding:5px}
+  .service-detail .service-pricing{padding:4px 11px;margin:3px auto 6px}
+  .service-detail .service-pricing strong{font-size:33px}
+  .service-detail>.gold-button{min-height:42px}
+}
