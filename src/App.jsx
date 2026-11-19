@@ -26,6 +26,7 @@ import {
   VolumeX,
   Film,
 } from "lucide-react";
+import {PrivacyControls, LegalPage, openPrivacySettings} from "./Legal.jsx";
 import "./styles.css";
 
 const IG = "https://www.instagram.com/deluxe.browstudio/";
@@ -1134,6 +1135,7 @@ function Booking({ picked }) {
             {status}
           </p>
         )}
+        <p className="form-datenschutz">Mit dem Absenden verarbeiten wir deine Angaben zur Bearbeitung deiner Terminanfrage gemäß unserer <a href="/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutzerklärung</a>. Bitte keine sensiblen Gesundheitsdaten senden.</p>
         <p className="form-footnote">
           Nach erfolgreichem Senden werden alle Felder und die Terminauswahl
           zurückgesetzt. Angezeigte Zeiten sind unverbindliche Wunschzeiten,
@@ -1183,12 +1185,22 @@ function Footer() {
         <span>
           © {new Date().getFullYear()} Deluxe Brow Studio · Konzeptansicht
         </span>
+        <div className="footer-legal">
+          <a href="/impressum">Impressum</a>
+          <a href="/datenschutz">Datenschutz</a>
+          <button type="button" onClick={openPrivacySettings}>Cookie-Einstellungen</button>
+        </div>
         <a href="#home">Zurück nach oben ↑</a>
       </div>
     </footer>
   );
 }
 export default function App() {
+  const legalPath=typeof window!=="undefined" ? window.location.pathname.replace(/\/$/,"") : "";
+  if(legalPath==="/datenschutz"||legalPath==="/impressum"){
+    return <><LegalPage kind={legalPath.slice(1)}/><PrivacyControls/></>;
+  }
+
   const [lightbox, setLightbox] = useState(null),
     [selectedService, setSelectedService] = useState("");
   return (
@@ -1207,6 +1219,7 @@ export default function App() {
         <Booking picked={selectedService} />
         <Footer />
       </main>
+      <PrivacyControls/>
       {lightbox && (
         <Lightbox item={lightbox} onClose={() => setLightbox(null)} />
       )}

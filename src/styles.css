@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Montserrat:wght@400;500;600&display=swap');
+0,500;0,600;1,400;1,500;1,600&family=Montserrat:wght@400;500;600&display=swap');
 :root{font-family:Montserrat,Arial,sans-serif;color:#f7e3c3;background:#0b0807;font-synthesis:none;-webkit-font-smoothing:antialiased;--gold:#e2af69;--gold-bright:#ffdfa1;--brown:#261911}
 *{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:84px}body{margin:0;min-width:320px}button,select,input,textarea{font:inherit}button{cursor:pointer}a{text-decoration:none;color:inherit}img{display:block;max-width:100%}h1,h2,h3,p{margin:0}h1,h2,h3{font-family:'Cormorant Garamond',Georgia,serif;font-weight:500}main{max-width:1480px;margin:auto;overflow:hidden;background:linear-gradient(#0f0a07,#100b08)}:focus-visible{outline:2px solid #ffd68a;outline-offset:3px}
 .site-header{position:fixed;z-index:70;top:0;left:50%;transform:translateX(-50%);width:min(100%,1480px);display:flex;align-items:flex-start;justify-content:space-between;padding:16px clamp(20px,5vw,70px);height:118px;background:linear-gradient(#100b08bb,transparent);pointer-events:none}.site-header>*{pointer-events:auto}.header-control{border:0;color:var(--gold);background:none;padding:13px;display:grid;place-items:center;filter:drop-shadow(0 0 5px #d89c4e88)}.header-control svg{width:29px;height:29px;stroke-width:1.8;transition:transform .9s}.header-control:hover svg{transform:scale(1.08)}.brand{position:absolute;top:18px;left:50%;transform:translateX(-50%);height:88px;width:88px;display:grid;place-items:center;border-radius:50%;isolation:isolate;box-shadow:0 0 14px #bf7d2a8a,0 0 28px #bb7a2a66}.brand img{width:100%;height:100%;border-radius:50%;object-fit:cover;position:relative;z-index:1;clip-path:circle(49%);filter:saturate(1.1)}.brand:before{content:'';position:absolute;inset:-5px;border-radius:50%;z-index:0;background:conic-gradient(from 20deg,#7d4515,#ffe7a4,#8b541d,#fbd185,#764318,#fff0be,#96541e,#e1aa5c,#7d4515);box-shadow:0 0 9px #e4ac55,0 0 26px #c5832d99;animation:ring-rotate 23s linear infinite}.brand:after{content:'';position:absolute;inset:-12px;border-radius:50%;box-shadow:0 0 36px #d9994366;animation:ring-pulse 11s ease-in-out infinite;z-index:-1}@keyframes ring-rotate{to{transform:rotate(360deg)}}@keyframes ring-pulse{50%{opacity:.55;transform:scale(1.08)}}
@@ -526,3 +526,54 @@ main{background:radial-gradient(ellipse at 50% 10%,#35231a 0%,#21140f 32%,#110b0
 @media(prefers-reduced-motion:reduce){
   .reels-scroll-viewport{mask-image:none;-webkit-mask-image:none}
 }
+
+
+/* Datenschutz/Impressum and consent notice: same black & gold aesthetic. */
+.privacy-overlay{position:fixed;z-index:10000;inset:0;display:flex;align-items:flex-end;justify-content:center;background:#0704038c;padding:16px;backdrop-filter:blur(4px)}
+.privacy-dialog{background:linear-gradient(135deg,#3e2819,#160e0a 80%);border:1px solid #d4a15a;box-shadow:0 0 35px #130903aa,0 0 22px #b17a3950;color:#f5dfbc;border-radius:23px;padding:clamp(18px,3vw,30px);width:min(100%,680px);max-height:88dvh;overflow-y:auto}
+.privacy-dialog-top{display:flex;align-items:center;gap:13px;margin-bottom:14px;color:#f9d399}
+.privacy-dialog-top h2{font-size:clamp(28px,4vw,39px)}
+.privacy-dialog p{font-size:13px;line-height:1.75}
+.privacy-dialog a,.legal-content a{color:#f9ce85;text-decoration:underline;text-underline-offset:3px}
+.privacy-more{margin:15px 0}
+.privacy-actions{display:flex;gap:10px;flex-wrap:wrap}
+.privacy-button{flex:1 1 170px;padding:12px 15px;min-height:46px;border-radius:36px;border:1px solid #e4b16e;background:#22150e;color:#ffe4b2;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:600;transition:box-shadow .6s,background-color .6s}
+.privacy-button:hover{box-shadow:0 0 14px #f0bd7866}
+.privacy-accept{background:linear-gradient(100deg,#c68e49,#f9d695);color:#1a0e08}
+.privacy-reject{border-color:#e7bb80}
+.privacy-choices{display:grid;gap:12px;margin:17px 0}
+.privacy-choices>div{display:grid;gap:7px;background:#160c098f;border:1px solid #b57c446f;padding:13px;border-radius:14px}
+.privacy-choices span{font-size:12px;line-height:1.6}
+.privacy-switch{display:flex;align-items:center;gap:10px;font-size:13px;min-height:30px}
+.privacy-switch input{accent-color:#e9b772;width:19px;height:19px}
+.legal-page{min-height:100dvh;background:linear-gradient(145deg,#23170f,#090706 65%);color:#f1dbc2}
+.legal-header{display:flex;justify-content:space-between;align-items:center;gap:15px;border-bottom:1px solid #af7c4855;padding:13px clamp(16px,5vw,70px)}
+.legal-home{display:flex;align-items:center;gap:12px;color:#ffd899;font:600 20px Georgia,serif}
+.legal-home img{height:55px;width:55px;object-fit:contain}
+.legal-back{display:flex;align-items:center;gap:7px;font-size:13px;color:#eed4ac}
+.legal-content{width:min(100% - 36px,850px);margin:0 auto;padding:clamp(45px,6vw,90px) 0}
+.legal-eyebrow{letter-spacing:.22em;color:#d7a760;font-size:11px}
+.legal-content h1{font-size:clamp(49px,7vw,80px);color:#f6c984;margin:12px 0 30px}
+.legal-content h2{font-size:clamp(27px,4vw,38px);color:#f6ce92;margin:0 0 12px}
+.legal-content section{border-top:1px solid #b4845066;padding:25px 0}
+.legal-content section p{font-size:14px;line-height:1.82;margin:9px 0}
+.legal-content code{font-size:12px;overflow-wrap:anywhere}
+.legal-pending{padding:17px 20px;border:1px solid #cda168;background:#563a2199;border-radius:14px;line-height:1.7;font-size:14px;margin-bottom:30px}
+.legal-links{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:25px}
+.legal-links button,.footer-legal button{background:none;color:#f1d2a2;border:0;text-decoration:underline;cursor:pointer;padding:0;font:inherit}
+.legal-bottom{padding:22px 16px;text-align:center;font-size:12px;color:#e0be90;border-top:1px solid #b484503b}
+.footer-legal{display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-top:16px;font-size:12px;color:#e6c18f}
+.footer-legal a{color:inherit;text-decoration:underline}
+.form-datenschutz{font-size:12px;line-height:1.6;color:#eacfac}
+.form-datenschutz a{text-decoration:underline;color:#ffd99f}
+@media(max-width:740px){
+ .privacy-overlay{padding:8px;align-items:flex-end}
+ .privacy-dialog{border-radius:22px 22px 14px 14px;padding:18px;max-height:86dvh}
+ .legal-header{padding:10px 14px}
+ .legal-home{font-size:15px}
+ .legal-home img{height:45px;width:45px}
+ .legal-back{font-size:11px}
+ .privacy-actions{gap:7px}
+ .privacy-button{flex:1 1 130px}
+}
+@media(prefers-reduced-motion:reduce){.privacy-button{transition:none}}
