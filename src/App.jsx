@@ -111,68 +111,89 @@ function Services({openImage}){
  ];
  return <section className="services-intro" id="services"><h2>Unsere Leistungen</h2><p className="italic-subtitle">Luxuriöse Behandlungen für perfekt geformte, ausdrucksstarke und gepflegte Brows.</p><Divider/><Marquee items={items} onImageClick={openImage}/><p className="carousel-hint">Automatisch gleitend · per Finger anhalten · antippen zum Vergrößern</p><GoldButton>Termin buchen</GoldButton><GoldButton outline href={IG}><Instagram size={18}/> Instagram ansehen</GoldButton></section>
 }
-function ReelCard({src,poster,title,description,active}){
+const ORIGINAL_REELS=[
+ {src:'/videos/deluxe-01.mp4',poster:'/images/deluxe-01.jpg',title:'Brow Moment 01',label:'Natürlich schön'},
+ {src:'/videos/deluxe-02.mp4',poster:'/images/deluxe-02.jpg',title:'Brow Moment 02',label:'Beauty Details'},
+ {src:'/videos/deluxe-03.mp4',poster:'/images/deluxe-03.jpg',title:'Brow Moment 03',label:'Brow Styling'},
+ {src:'/videos/deluxe-04.mp4',poster:'/images/deluxe-04.jpg',title:'Brow Moment 04',label:'Feine Details'},
+ {src:'/videos/deluxe-05.mp4',poster:'/images/deluxe-05.jpg',title:'Brow Moment 05',label:'Pure Eleganz'},
+ {src:'/videos/deluxe-06.mp4',poster:'/images/deluxe-06.jpg',title:'Brow Moment 06',label:'Studio Moments'},
+ {src:'/videos/deluxe-07.mp4',poster:'/images/deluxe-07.jpg',title:'Brow Moment 07',label:'Deluxe Beauty'}
+];
+function OriginalReelCard({item,duplicate=false}){
  const videoRef=useRef(null);
+ const cardRef=useRef(null);
+ const [inView,setInView]=useState(false);
  const [soundOn,setSoundOn]=useState(false);
- const [mediaError,setMediaError]=useState(false);
+ const [error,setError]=useState(false);
  useEffect(()=>{
-  const video=videoRef.current;
-  if(!video)return;
-  video.muted=!soundOn;
-  if(active){
-   const promise=video.play();
-   if(promise&&typeof promise.catch==='function')promise.catch(()=>{});
-  } else {
-   video.pause();
+  const card=cardRef.current;
+  if(!card)return;
+  const observer=new IntersectionObserver(([entry])=>{
+   setInView(entry.isIntersecting&&entry.intersectionRatio>0.2&&!document.hidden);
+  },{threshold:[0,0.2,0.55]});
+  observer.observe(card);
+  const handleVisibility=()=>{
+   if(document.hidden){setInView(false);return}
+   const r=card.getBoundingClientRect();
+   setInView(r.right>0&&r.left<window.innerWidth&&r.bottom>0&&r.top<window.innerHeight);
+  };
+  document.addEventListener('visibilitychange',handleVisibility);
+  return()=>{observer.disconnect();document.removeEventListener('visibilitychange',handleVisibility)};
+ },[]);
+ useEffect(()=>{
+  const v=videoRef.current;
+  if(!v)return;
+  v.muted=!soundOn;
+  if(inView){
+   const maybe=v.play();
+   if(maybe&&typeof maybe.catch==='function')maybe.catch(()=>{});
+  }else{
+   v.pause();
   }
- },[active,soundOn]);
- return <article className="reel-card">
+ },[inView,soundOn]);
+ return <article className="reel-card original-reel-card" ref={cardRef}>
   <div className="reel-frame">
-   <video ref={videoRef} className="reel-video" src={src} poster={poster}
-    muted playsInline loop preload="metadata"
-    aria-label={title} onError={()=>setMediaError(true)}
-    onLoadedData={()=>setMediaError(false)}/>
-   <div className="reel-visual-top" aria-hidden="true"><Film size={18}/> DELUXE BROW STUDIO</div>
-   {mediaError&&<div className="reel-video-error" role="status">Video derzeit nicht verfügbar</div>}
-   <button type="button" className="reel-sound" onClick={()=>setSoundOn(v=>!v)}
-    aria-label={soundOn?'Ton für '+title+' ausschalten':'Ton für '+title+' einschalten'}
-    aria-pressed={soundOn}>
-    {soundOn?<Volume2 size={20}/>:<VolumeX size={20}/>}
-    <span>{soundOn?'Ton an':'Ton aus'}</span>
+   <video ref={videoRef} className="reel-video" src={inView?item.src:undefined}
+    poster={item.poster} playsInline autoPlay muted loop preload="none"
+    aria-label={'Deluxe Brow Studio – '+item.title}
+    onError={()=>setError(true)} onLoadedData={()=>setError(false)}/>
+   {error&&<div className="reel-video-error" role="status">Video derzeit nicht verfügbar</div>}
+   <button type="button" className="reel-sound" onClick={()=>setSoundOn(old=>!old)}
+    aria-label={soundOn?'Ton ausschalten: '+item.title:'Ton einschalten: '+item.title}
+    aria-pressed={soundOn} tabIndex={duplicate?-1:0}>
+     {soundOn?<Volume2 size={19}/>:<VolumeX size={19}/>}
+     <span>{soundOn?'Ton an':'Ton aus'}</span>
    </button>
   </div>
-  <div className="reel-card-copy"><h3>{title}</h3><p>{description}</p></div>
- </article>
+  <div className="reel-card-copy"><h3>{item.label}</h3></div>
+ </article>;
 }
 function StudioReels(){
- const sectionRef=useRef(null);
- const [visible,setVisible]=useState(false);
+ const [holding,setHolding]=useState(false);
  useEffect(()=>{
-  const section=sectionRef.current;
-  if(!section || typeof IntersectionObserver==='undefined')return;
-  const observer=new IntersectionObserver(([entry])=>{
-   setVisible(entry.isIntersecting&&entry.intersectionRatio>=0.25&&!document.hidden);
-  },{threshold:[0,0.25,0.5]});
-  observer.observe(section);
-  const onVisibility=()=>{if(document.hidden)setVisible(false);else{
-   const rect=section.getBoundingClientRect();
-   setVisible(rect.top<window.innerHeight*.75&&rect.bottom>window.innerHeight*.25);
-  }};
-  document.addEventListener('visibilitychange',onVisibility);
-  return ()=>{observer.disconnect();document.removeEventListener('visibilitychange',onVisibility)};
+  const release=()=>setHolding(false);
+  window.addEventListener('pointerup',release);
+  window.addEventListener('pointercancel',release);
+  window.addEventListener('blur',release);
+  return()=>{window.removeEventListener('pointerup',release);
+   window.removeEventListener('pointercancel',release);window.removeEventListener('blur',release)};
  },[]);
- return <section ref={sectionRef} className="studio-reels" id="reels" aria-labelledby="studio-reels-heading">
+ return <section className="studio-reels" id="reels" aria-labelledby="studio-reels-heading">
   <SectionLabel>EINBLICKE IN UNSERE ARBEIT</SectionLabel>
   <h2 id="studio-reels-heading">Beauty in Bewegung</h2>
-  <p className="italic-subtitle">Einblicke, besondere Momente und pure Brow-Liebe.</p>
+  <p className="italic-subtitle">Sieben echte Momente aus dem Studio.</p>
   <Divider/>
-  <div className="reels-grid">
-   <ReelCard src="/videos/deluxe-slow-luxury.mp4" poster="/images/studio-client-3089.jpg"
-    title="Slow Luxury" description="Sanfte Momente im Deluxe Brow Studio" active={visible}/>
-   <ReelCard src="/videos/deluxe-brow-reel.mp4" poster="/images/studio-client-3389.jpg"
-    title="Brow Moments" description="Ein besonderer Blick auf unsere Arbeit" active={visible}/>
+  <div className={'reels-marquee'+(holding?' is-paused':'')}
+   onPointerDown={()=>setHolding(true)} onPointerCancel={()=>setHolding(false)}
+   aria-label="Sieben Originalvideos, automatisch nach rechts laufend">
+   <div className="reels-track">
+    {[0,1].map(copy=><div className="reels-set" key={copy} aria-hidden={copy===1?'true':undefined}>
+     {ORIGINAL_REELS.map((item,i)=><OriginalReelCard item={item} key={i} duplicate={copy===1}/>)}
+    </div>)}
+   </div>
   </div>
-  <p className="reels-note">Beide Videos starten automatisch und lautlos, sobald du diesen Bereich erreichst. Den Ton kannst du pro Video einschalten.</p>
+  <p className="reels-note">Die Videos laufen automatisch und ohne Ton. Jedes Video hat einen eigenen Ton-Schalter. Zum Anhalten berühren.</p>
  </section>;
 }
 

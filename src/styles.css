@@ -409,3 +409,40 @@ main{background:radial-gradient(ellipse at 50% 10%,#35231a 0%,#21140f 32%,#110b0
  .reel-card-copy h3{font-size:23px}
  .reel-card-copy p{font-size:10px}
 }
+
+/* Seven original Deluxe videos, continuously travelling LEFT → RIGHT. */
+.studio-reels{padding-left:0;padding-right:0}
+.studio-reels>.section-label,.studio-reels>h2,.studio-reels>.italic-subtitle,.studio-reels>.heart-divider,.studio-reels>.reels-note{padding-left:15px;padding-right:15px}
+.reels-marquee{
+ width:100%;overflow:hidden;position:relative;touch-action:pan-y;
+ -webkit-mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent);
+ mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent);
+}
+.reels-track{
+ display:flex;width:max-content;max-width:none;will-change:transform;
+ animation:reels-move-right 110s linear infinite;
+}
+.reels-marquee.is-paused .reels-track{animation-play-state:paused}
+.reels-set{display:flex;gap:18px;padding-right:18px;flex:0 0 auto}
+.reels-set .original-reel-card{
+ width:clamp(190px,19vw,290px);flex:0 0 auto;
+ border-radius:22px;overflow:hidden;
+}
+.original-reel-card .reel-card-copy{padding:12px 6px 15px}
+.original-reel-card .reel-card-copy h3{font-size:clamp(22px,2.1vw,29px)}
+.original-reel-card .reel-frame{aspect-ratio:9/16}
+.original-reel-card .reel-video{width:100%;height:100%;object-fit:contain}
+@keyframes reels-move-right{
+ from{transform:translate3d(-50%,0,0)}
+ to{transform:translate3d(0,0,0)}
+}
+@media(max-width:740px){
+ .reels-set{gap:10px;padding-right:10px}
+ .reels-set .original-reel-card{width:clamp(175px,52vw,225px)}
+ .reels-track{animation-duration:145s}
+ .studio-reels .reels-note{max-width:370px}
+}
+@media(prefers-reduced-motion:reduce){
+ .reels-track{animation:none}
+ .reels-marquee{overflow-x:auto;mask-image:none;-webkit-mask-image:none}
+}

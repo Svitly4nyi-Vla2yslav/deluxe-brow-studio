@@ -1,0 +1,65 @@
+name: Import seven original Deluxe studio videos
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/import-seven-videos.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  transcode:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify FFmpeg
+        run: ffmpeg -version | head -2
+      - name: Download, optimize and brand seven original clips
+        env:
+          VIDEO_URLS: |
+            https://at.adobe.com/9qyhytzOLFW2i8O1
+            https://at.adobe.com/zdPGrwE1eWiDenNb
+            https://at.adobe.com/AFRnhLOcFOsJLdKs
+            https://at.adobe.com/WieHCRUiJrxLsae5
+            https://at.adobe.com/Ao4K7ocyr5r8WXcF
+            https://at.adobe.com/EuJbnwUeHaWFb38f
+            https://at.adobe.com/bhWh31UAQFfr8FNX
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/videos public/images .tmp-deluxe
+          test -s public/images/logo-transparent.png
+          i=0
+          while IFS= read -r URL; do
+            [[ -z "$URL" ]] && continue
+            i=$((i+1))
+            num=$(printf '%02d' "$i")
+            echo "Processing original video $num / 07"
+            curl --fail --location --retry 3 --connect-timeout 20 --max-time 240 \
+              "$URL" -o ".tmp-deluxe/source-$num.mov"
+            ffprobe -v error -select_streams v:0 -show_entries stream=width,height \
+              -of csv=p=0 ".tmp-deluxe/source-$num.mov"
+            ffmpeg -hide_banner -loglevel error -y -i ".tmp-deluxe/source-$num.mov" \
+              -loop 1 -i public/images/logo-transparent.png \
+              -filter_complex "[0:v]scale='if(gte(iw,ih),960,540)':'if(gte(iw,ih),540,960)':flags=lanczos,setsar=1,format=yuv420p[v];[1:v]scale=72:-1,format=rgba[logo];[v][logo]overlay=W-w-14:14:shortest=1:format=auto,format=yuv420p[out]" \
+              -map "[out]" -map 0:a:0? -c:v libx264 -preset veryfast -crf 23 \
+              -r 30 -c:a aac -b:a 128k -movflags +faststart -pix_fmt yuv420p \
+              "public/videos/deluxe-$num.mp4"
+            ffmpeg -hide_banner -loglevel error -y -ss 0.6 \
+              -i "public/videos/deluxe-$num.mp4" -frames:v 1 -q:v 3 \
+              "public/images/deluxe-$num.jpg"
+            test -s "public/videos/deluxe-$num.mp4"
+            test -s "public/images/deluxe-$num.jpg"
+            rm -f ".tmp-deluxe/source-$num.mov"
+          done <<< "$VIDEO_URLS"
+          test "$i" -eq 7
+          du -h public/videos/deluxe-*.mp4
+      - name: Commit finished MP4 videos and previews
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/videos/deluxe-0*.mp4 public/images/deluxe-0*.jpg
+          git diff --cached --quiet && exit 0
+          git commit -m "assets: add seven logo-branded original studio videos"
+          git push origin HEAD:main
