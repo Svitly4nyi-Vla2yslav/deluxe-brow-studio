@@ -488,3 +488,41 @@ main{background:radial-gradient(ellipse at 50% 10%,#35231a 0%,#21140f 32%,#110b0
  .service-pricing .service-current-price{font-size:38px}
  .service-pricing .service-price-decoration{width:20px}
 }
+
+/* November 2026: interactive mobile + desktop reels gallery.
+   The scroll container owns movement, CSS animations/transforms are disabled. */
+.reels-scroll-viewport{
+  width:100%;
+  max-width:100%;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  overscroll-behavior-x:contain;
+  scroll-behavior:auto!important;
+  scroll-snap-type:none!important;
+  scrollbar-width:none;
+  cursor:grab;
+  touch-action:pan-y;
+  -webkit-overflow-scrolling:touch;
+}
+.reels-scroll-viewport.is-dragging{cursor:grabbing}
+.reels-scroll-viewport::-webkit-scrollbar{display:none}
+.reels-scroll-viewport .reels-track.reels-track-js{
+  animation:none!important;
+  transform:none!important;
+  transition:none!important;
+  will-change:auto;
+}
+.original-reel-card .reel-poster{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  background:#100b09;
+}
+.original-reel-card .reel-video{
+  object-fit:contain;
+  background:#100b09;
+}
+@media(prefers-reduced-motion:reduce){
+  .reels-scroll-viewport{mask-image:none;-webkit-mask-image:none}
+}

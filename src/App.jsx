@@ -469,87 +469,94 @@ const ORIGINAL_REELS = [
     label: "Deluxe Beauty",
   },
 ];
-function OriginalReelCard({item,duplicate=false}) {
-  const videoRef=useRef(null);
+function OriginalReelCard({item,duplicate=false,viewportRef}) {
   const cardRef=useRef(null);
-  const [inView,setInView]=useState(false);
+  const videoRef=useRef(null);
+  const [visible,setVisible]=useState(false);
   const [soundOn,setSoundOn]=useState(false);
   const [mediaError,setMediaError]=useState(false);
   const id=item.src.match(/deluxe-(\d\d)/)?.[1];
-  // MP4/H.264 is more reliable for Android hardware decoders than VP9 WebM.
-  const mp4='/videos/deluxe-'+id+'.mp4';
-  const webm='/videos/deluxe-'+id+'.webm';
-  const mobileMp4='/videos/deluxe-'+id+'-mobile.mp4';
-  // Small H.264 Baseline videos are prioritized on touch devices / small displays.
-  const mobilePlayback=window.matchMedia('(max-width: 900px), (pointer: coarse)').matches;
+  const isMobile=typeof window!=='undefined' && window.matchMedia('(max-width: 900px), (pointer: coarse)').matches;
+  const videoSrc='/videos/deluxe-'+id+(isMobile?'-mobile':'')+'.mp4';
+
   useEffect(()=>{
     const card=cardRef.current;
-    if(!card)return;
-    const checkVisibility=()=>{
-      const r=card.getBoundingClientRect();
-      const width=Math.max(0,Math.min(r.right,window.innerWidth)-Math.max(r.left,0));
-      const height=Math.max(0,Math.min(r.bottom,window.innerHeight)-Math.max(r.top,0));
-      const visible=width>=Math.min(48,r.width*.22)&&height>=Math.min(70,r.height*.22);
-      setInView(visible&&!document.hidden);
-    };
-    const observer=new IntersectionObserver(checkVisibility,{threshold:[0,.1,.2,.35,.6]});
+    const root=viewportRef.current;
+    if(!card||!root)return;
+    let live=false;
+    const observer=new IntersectionObserver(([entry])=>{
+      // Use the clipped carousel as the root. A partial glimpse must not
+      // start another decoder on low-memory Android devices.
+      const onScreen=!document.hidden && entry.isIntersecting &&
+        entry.intersectionRatio>=0.22;
+      if(onScreen!==live){live=onScreen;setVisible(onScreen);}
+    },{root,threshold:[0,0.05,0.22,0.5,0.8]});
     observer.observe(card);
-    document.addEventListener('visibilitychange',checkVisibility);
-    window.addEventListener('resize',checkVisibility,{passive:true});
-    checkVisibility();
-    return()=>{observer.disconnect();document.removeEventListener('visibilitychange',checkVisibility);window.removeEventListener('resize',checkVisibility)};
-  },[]);
-  // Don't download, buffer or decode a video while it is outside the viewport.
-  useEffect(()=>{
-    const v=videoRef.current;
-    if(!v)return;
-    if(!inView){
-      setMediaError(false);
-      v.pause();
-      v.removeAttribute('src');
-      // source elements are absent when the card is asleep; load() releases decoders.
-      v.load();
-      return;
-    }
-    v.defaultMuted=true;
-    v.muted=!soundOn;
-    v.load();
-    const play=()=>{
-      if(!document.hidden && inView){
-        v.muted=!soundOn;
-        const p=v.play();
-        if(p?.catch)p.catch(()=>{}); // Browsers can block playback; poster remains.
-      }
+    const pageVisibility=()=>{
+      if(document.hidden){live=false;setVisible(false);}
+      else observer.unobserve(card),observer.observe(card);
     };
-    v.addEventListener('canplay',play);
-    play();
-    return()=>v.removeEventListener('canplay',play);
-  },[inView]); // Reload only on entering/leaving, not for sound-button clicks.
+    document.addEventListener('visibilitychange',pageVisibility);
+    return()=>{observer.disconnect();document.removeEventListener('visibilitychange',pageVisibility)};
+  },[viewportRef]);
+
+  // Mount <video> only while visible. Off-screen cards are lightweight still
+  // images, with no network requests, no media buffer and no active decoder.
   useEffect(()=>{
-    const v=videoRef.current;
-    if(!v)return;
-    v.muted=!soundOn;
-    if(inView && !document.hidden) {
-      const p=v.play();
-      if(p?.catch)p.catch(()=>{});
-    }
-  },[soundOn,inView]);
+    if(!visible){setSoundOn(false);setMediaError(false);return;}
+    const video=videoRef.current;
+    if(!video)return;
+    video.defaultMuted=true;
+    video.muted=true;
+    const playMuted=()=>{
+      if(document.hidden)return;
+      const promise=video.play();
+      if(promise?.catch)promise.catch(()=>{});
+    };
+    video.addEventListener('loadeddata',playMuted);
+    video.addEventListener('canplay',playMuted);
+    playMuted();
+    return()=>{
+      video.removeEventListener('loadeddata',playMuted);
+      video.removeEventListener('canplay',playMuted);
+      video.pause();
+    };
+  },[visible]);
+
+  const toggleSound=()=>{
+    setSoundOn(previous=>{
+      const next=!previous;
+      const video=videoRef.current;
+      if(video){
+        video.muted=!next;
+        if(visible && video.paused){
+          const promise=video.play();
+          if(promise?.catch)promise.catch(()=>{});
+        }
+      }
+      return next;
+    });
+  };
+
   return <article ref={cardRef} className="reel-card original-reel-card">
     <div className="reel-frame">
-      <video ref={videoRef} className="reel-video"
-        poster={item.poster} muted playsInline loop preload="none"
+      {visible ? <video
+        ref={videoRef} key={videoSrc} className="reel-video"
+        src={videoSrc} poster={item.poster}
+        playsInline muted autoPlay loop preload="metadata"
+        disablePictureInPicture
         aria-label={'Deluxe Brow Studio – '+item.title}
-        onError={()=>{if(inView)setMediaError(true)}} onLoadedData={()=>setMediaError(false)}>
-        {inView && <>
-          {mobilePlayback && <source src={mobileMp4} type="video/mp4"/>}
-          <source src={mp4} type="video/mp4"/>
-          <source src={webm} type="video/webm"/>
-        </>}
-      </video>
-      {mediaError && <div className="reel-video-error" role="status">Video derzeit nicht verfügbar</div>}
-      <button type="button" className="reel-sound" tabIndex={duplicate?-1:0}
-        onClick={()=>setSoundOn(s=>!s)} aria-pressed={soundOn}
-        aria-label={soundOn?'Ton ausschalten: '+item.title:'Ton einschalten: '+item.title}>
+        onError={()=>setMediaError(true)}
+        onLoadedData={()=>setMediaError(false)}
+      /> : <img className="reel-poster" loading="lazy" src={item.poster}
+        alt={'Vorschaubild: '+item.title}/>}
+      {mediaError && <div className="reel-video-error" role="status">
+        Video derzeit nicht verfügbar
+      </div>}
+      <button type="button" className="reel-sound"
+        onClick={toggleSound} tabIndex={duplicate?-1:0}
+        aria-label={soundOn?'Ton ausschalten: '+item.title:'Ton einschalten: '+item.title}
+        aria-pressed={soundOn}>
         {soundOn?<Volume2 size={19}/>:<VolumeX size={19}/>}
         <span>{soundOn?'Ton an':'Ton aus'}</span>
       </button>
@@ -557,71 +564,124 @@ function OriginalReelCard({item,duplicate=false}) {
     <div className="reel-card-copy"><h3>{item.label}</h3></div>
   </article>;
 }
+
 function StudioReels() {
   const sectionRef=useRef(null);
-  const trackRef=useRef(null);
+  const viewportRef=useRef(null);
   const firstSetRef=useRef(null);
-  const held=useRef(false);
+  const drag=useRef({active:false,initialX:0,previousX:0,distance:0,wasDragged:false});
+  const pauseUntil=useRef(0);
+  const [dragging,setDragging]=useState(false);
+
   useEffect(()=>{
-    const track=trackRef.current,section=sectionRef.current,first=firstSetRef.current;
-    if(!track||!section||!first)return;
-    const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
-    let frame=0,previous=0,offset=0,groupWidth=0,sectionVisible=false;
-    const updateWidth=()=>{
-      groupWidth=first.getBoundingClientRect().width;
-      if(groupWidth>0){
-        offset=offset%groupWidth;
-        track.style.transform='translate3d('+(-groupWidth+offset)+'px,0,0)';
+    const viewport=viewportRef.current;
+    const section=sectionRef.current;
+    const first=firstSetRef.current;
+    if(!viewport||!section||!first)return;
+
+    let groupWidth=0,frame=0,previous=0,sectionVisible=false,needsInit=true;
+    const prefersReducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
+    const getWidth=()=>{
+      const width=first.getBoundingClientRect().width;
+      if(width<=0)return;
+      const old=groupWidth;
+      groupWidth=width;
+      if(needsInit){
+        viewport.scrollLeft=groupWidth;
+        needsInit=false;
+      }else if(old>0){
+        viewport.scrollLeft+=(groupWidth-old);
       }
     };
-    const resize=new ResizeObserver(updateWidth);
-    resize.observe(first);
-    const observer=new IntersectionObserver(([entry])=>{
+    const keepLooped=()=>{
+      if(groupWidth<=0)return;
+      // Both groups are identical. Wrapping by one full group is invisible.
+      if(viewport.scrollLeft<=0)viewport.scrollLeft+=groupWidth;
+      if(viewport.scrollLeft>groupWidth)viewport.scrollLeft-=groupWidth;
+    };
+    const resizeObserver=new ResizeObserver(getWidth);
+    resizeObserver.observe(first);
+    const viewObserver=new IntersectionObserver(([entry])=>{
       sectionVisible=entry.isIntersecting;
+      if(entry.isIntersecting) getWidth();
     },{threshold:0});
-    observer.observe(section);
-    const release=()=>{held.current=false};
-    const onHide=()=>{previous=0};
-    const tick=time=>{
-      const delta=previous?Math.min(50,time-previous):0;
+    viewObserver.observe(section);
+
+    const tick=(time)=>{
+      const delta=previous?Math.min(48,time-previous):0;
       previous=time;
-      if(groupWidth>0&&sectionVisible&&!document.hidden&&!held.current&&!reduceMotion.matches){
-        // Real distance-based movement on mobile AND desktop, independent of CSS animation settings.
-        const speed=window.innerWidth<740?12:18; // pixels/second, calm luxury motion
-        offset=(offset+delta*speed/1000)%groupWidth;
-        track.style.transform='translate3d('+(-groupWidth+offset)+'px,0,0)';
+      const shouldMove=groupWidth>0 && sectionVisible && !document.hidden &&
+        !drag.current.active && time>=pauseUntil.current &&
+        !prefersReducedMotion.matches;
+      if(shouldMove){
+        const speed=window.innerWidth<740?15:24;
+        viewport.scrollLeft-=delta*speed/1000; // left-to-right content motion
+        keepLooped();
       }
       frame=requestAnimationFrame(tick);
     };
-    updateWidth();
+    getWidth();
     frame=requestAnimationFrame(tick);
-    window.addEventListener('pointerup',release);
-    window.addEventListener('pointercancel',release);
-    window.addEventListener('blur',release);
-    document.addEventListener('visibilitychange',onHide);
+
+    // Manual scrolling by mouse wheel/trackpad also wraps seamlessly.
+    const onScroll=()=>keepLooped();
+    viewport.addEventListener('scroll',onScroll,{passive:true});
+    const onWindowBlur=()=>{drag.current.active=false;setDragging(false)};
+    window.addEventListener('blur',onWindowBlur);
     return()=>{
-      cancelAnimationFrame(frame);resize.disconnect();observer.disconnect();
-      window.removeEventListener('pointerup',release);
-      window.removeEventListener('pointercancel',release);
-      window.removeEventListener('blur',release);
-      document.removeEventListener('visibilitychange',onHide);
+      cancelAnimationFrame(frame);
+      resizeObserver.disconnect();viewObserver.disconnect();
+      viewport.removeEventListener('scroll',onScroll);
+      window.removeEventListener('blur',onWindowBlur);
     };
   },[]);
+
+  const startDrag=e=>{
+    // Buttons remain independently clickable.
+    if(e.target.closest('button'))return;
+    drag.current={active:true,initialX:e.clientX,previousX:e.clientX,distance:0,wasDragged:false};
+    pauseUntil.current=performance.now()+2000;
+    setDragging(true);
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+  const moveDrag=e=>{
+    const d=drag.current;
+    if(!d.active)return;
+    const movement=e.clientX-d.previousX;
+    d.previousX=e.clientX;
+    d.distance+=Math.abs(movement);
+    if(d.distance>5)d.wasDragged=true;
+    const viewport=viewportRef.current;
+    if(viewport)viewport.scrollLeft-=movement;
+  };
+  const endDrag=e=>{
+    drag.current.active=false;
+    pauseUntil.current=performance.now()+2300;
+    setDragging(false);
+    if(e.currentTarget.hasPointerCapture?.(e.pointerId)){
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
+  };
   return <section ref={sectionRef} className="studio-reels" id="reels" aria-labelledby="studio-reels-heading">
     <SectionLabel>EINBLICKE IN UNSERE ARBEIT</SectionLabel>
     <h2 id="studio-reels-heading">Beauty in Bewegung</h2>
     <p className="italic-subtitle">Sieben echte Momente aus dem Studio.</p>
     <Divider/>
-    <div className="reels-marquee" onPointerDown={()=>{held.current=true}} onPointerCancel={()=>{held.current=false}}
-      aria-label="Sieben Originalvideos, automatisch nach rechts laufend">
-      <div ref={trackRef} className="reels-track reels-track-js">
-        {[0,1].map(copy=><div className="reels-set" ref={copy===0?firstSetRef:undefined} key={copy}
-          aria-hidden={copy===1?'true':undefined}>
-          {ORIGINAL_REELS.map((item,i)=><OriginalReelCard item={item} duplicate={copy===1} key={i}/>)}
+    <div ref={viewportRef}
+      className={'reels-marquee reels-scroll-viewport'+(dragging?' is-dragging':'')}
+      onPointerDown={startDrag} onPointerMove={moveDrag}
+      onPointerUp={endDrag} onPointerCancel={endDrag}
+      onWheel={()=>{pauseUntil.current=performance.now()+1800}}
+      aria-label="Sieben Originalvideos: automatisch laufend, mit Finger oder Maus verschiebbar">
+      <div className="reels-track reels-track-js">
+        {[0,1].map(copy=><div className="reels-set" ref={copy===0?firstSetRef:undefined}
+          key={copy} aria-hidden={copy===1?'true':undefined}>
+          {ORIGINAL_REELS.map((item,i)=>
+            <OriginalReelCard item={item} viewportRef={viewportRef} duplicate={copy===1} key={i}/>)}
         </div>)}
       </div>
     </div>
-    <p className="reels-note">Videos starten nur im sichtbaren Bereich, automatisch ohne Ton. Jedes Video hat einen eigenen Ton-Schalter. Zum Anhalten berühren.</p>
+    <p className="reels-note">Automatisch gleitende Videos. Mit Finger oder Maus wischen, um schneller zu schauen. Videos spielen nur im sichtbaren Bereich und zunächst ohne Ton.</p>
   </section>;
 }
 
