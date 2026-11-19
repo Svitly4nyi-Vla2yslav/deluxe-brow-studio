@@ -30,7 +30,7 @@ function deleteGaCookies(){
 }
 export function PrivacyControls(){
  const [choice,setChoice]=useState(readChoice);
- const [open,setOpen]=useState(()=>!readChoice());
+ const [open,setOpen]=useState(()=>!readChoice() && !/^\/(?:datenschutz|impressum)\/?$/.test(window.location.pathname));
  const [details,setDetails]=useState(false);
  const [statistics,setStatistics]=useState(false);
  const dialogRef=useRef(null);
