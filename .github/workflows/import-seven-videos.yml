@@ -19,23 +19,23 @@ jobs:
           sudo apt-get install -y ffmpeg
           ffmpeg -version | head -2
       - name: Download, optimize and brand seven original clips
-        env:
-          VIDEO_URLS: |
-            https://at.adobe.com/9qyhytzOLFW2i8O1
-            https://at.adobe.com/zdPGrwE1eWiDenNb
-            https://at.adobe.com/AFRnhLOcFOsJLdKs
-            https://at.adobe.com/WieHCRUiJrxLsae5
-            https://at.adobe.com/Ao4K7ocyr5r8WXcF
-            https://at.adobe.com/EuJbnwUeHaWFb38f
-            https://at.adobe.com/bhWh31UAQFfr8FNX
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p public/videos public/images .tmp-deluxe
           test -s public/images/logo-transparent.png
+          URLS=(
+            'https://at.adobe.com/9qyhytzOLFW2i8O1'
+            'https://at.adobe.com/zdPGrwE1eWiDenNb'
+            'https://at.adobe.com/AFRnhLOcFOsJLdKs'
+            'https://at.adobe.com/WieHCRUiJrxLsae5'
+            'https://at.adobe.com/Ao4K7ocyr5r8WXcF'
+            'https://at.adobe.com/EuJbnwUeHaWFb38f'
+            'https://at.adobe.com/bhWh31UAQFfr8FNX'
+          )
           i=0
-          while IFS= read -r URL; do
-            [[ -z "$URL" ]] && continue
+          for URL in "${URLS[@]}"; do
+            echo "Fetching $URL"
             i=$((i+1))
             num=$(printf '%02d' "$i")
             echo "Processing original video $num / 07"
@@ -55,7 +55,7 @@ jobs:
             test -s "public/videos/deluxe-$num.mp4"
             test -s "public/images/deluxe-$num.jpg"
             rm -f ".tmp-deluxe/source-$num.mov"
-          done <<< "$VIDEO_URLS"
+          done
           test "$i" -eq 7
           du -h public/videos/deluxe-*.mp4
       - name: Commit finished MP4 videos and previews
