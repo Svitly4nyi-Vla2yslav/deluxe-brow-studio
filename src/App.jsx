@@ -38,10 +38,9 @@ const IMG = {
 const SERVICES = [
   {
     id: "korrektur",
-    name: "Augenbrauenkorrektur",
+    name: "Augenbrauen-Korrektur",
     short: "Augenbrauen-korrektur",
-    old: 30,
-    promo: 21,
+    price: 15,
     images: ["/images/correction-1.jpg", "/images/correction-2.jpg"],
     pair: "/images/correction-pair.jpg",
     description:
@@ -55,27 +54,25 @@ const SERVICES = [
   },
   {
     id: "faerben",
-    name: "Augenbrauenfärben",
-    short: "Augenbrauen-färben",
-    old: 40,
-    promo: 28,
+    name: "Augenbrauen-Färbung + Korrektur",
+    short: "Augenbrauen-färbung + Korrektur",
+    price: 30,
     images: ["/images/tint-1.jpg", "/images/tint-2.jpg"],
     pair: "/images/tint-pair.jpg",
     description:
-      "Für mehr Ausdruck und Definition – durch sanftes Färben der Augenbrauen.",
+      "Sanfte Farbintensivierung und präzise Korrektur für ausdrucksstarke Brauen.",
     benefits: [
       ["droplets", "Intensiverer Brow-Look"],
       ["sparkles", "Mehr Definition"],
       ["calendar", "Langanhaltendes Ergebnis"],
     ],
-    cta: "Termin zum Färben buchen",
+    cta: "Termin für Färbung + Korrektur buchen",
   },
   {
     id: "laminierung",
-    name: "Augenbrauenlaminierung",
+    name: "Augenbrauen-Laminierung",
     short: "Augenbrauen-laminierung",
-    old: 60,
-    promo: 42,
+    price: 30,
     images: ["/images/lamination-1.jpg", "/images/lamination-2.jpg"],
     pair: "/images/lamination-pair.jpg",
     description:
@@ -88,6 +85,13 @@ const SERVICES = [
     cta: "Termin zur Laminierung buchen",
   },
 ];
+const COMBO_SERVICE = {
+  id: "laminierung-faerbung",
+  name: "Augenbrauen-Laminierung + Färbung",
+  price: 40,
+  images: ["/images/lamination-2.jpg"],
+};
+const PRICE_SERVICES = [SERVICES[2], SERVICES[1], COMBO_SERVICE, SERVICES[0]];
 const ICONS = {
   diamond: Diamond,
   sparkles: Sparkles,
@@ -748,69 +752,49 @@ function ServiceSection({ service, onBook }) {
       <Divider />
       <Comparison pair={service.pair} name={service.name} />
       <p className="visual-note">
-        KI-Visualisierung zur Demonstration der Behandlung. Keine dokumentierten
-        Kundenergebnisse.
+        KI-Visualisierung zur Demonstration der Behandlung. Keine dokumentierten Kundenergebnisse.
       </p>
       <div className="service-benefits glow-panel">
-        {service.benefits.map(([icon, label]) => {
+        {service.benefits.map(([icon,label]) => {
           const Icon = ICONS[icon];
-          return (
-            <div key={label}>
-              <Icon />
-              <span>{label}</span>
-            </div>
-          );
+          return <div key={label}><Icon/><span>{label}</span></div>;
         })}
       </div>
       <div className="service-pricing glow-panel">
-        <span>
-          Regulär <del>{service.old} €</del>
-        </span>
-        <span>
-          Jetzt <strong>{service.promo} €</strong>
-        </span>
-        <b>−30%</b>
+        <span className="service-price-label">Studio-Preis</span>
+        <strong className="service-current-price">{service.price} €</strong>
+        <Sparkles className="service-price-decoration" size={23} aria-hidden="true"/>
       </div>
-      <GoldButton href="#booking" onClick={() => onBook(service.name)}>
-        {service.cta}
-      </GoldButton>
+      <GoldButton href="#booking" onClick={() => onBook(service.name)}>{service.cta}</GoldButton>
     </section>
   );
 }
 function Prices({ onBook }) {
   return (
     <section className="prices-section" id="preise">
-      <h2>Preise &amp; Weihnachtsrabatt</h2>
+      <h2>Unsere Preise</h2>
       <p className="italic-subtitle">
-        Festliche Beauty-Angebote für perfekt geformte, gepflegte und
-        ausdrucksstarke Brows.
+        Augenbrauen-Styling und kombinierte Behandlungen – mit Liebe zum Detail.
       </p>
       <Divider />
       <div className="price-list">
-        {SERVICES.map((s) => (
-          <a
-            key={s.id}
-            className="price-row glow-panel"
-            href="#booking"
-            onClick={() => onBook(s.name)}
-          >
+        {PRICE_SERVICES.map((s) => (
+          <a key={s.id} className="price-row glow-panel"
+            href="#booking" onClick={() => onBook(s.name)}>
             <img src={s.images[0]} loading="lazy" alt={"KI-Motiv " + s.name} />
             <div>
               <h3>{s.name}</h3>
               <div className="price-values">
-                <del>{s.old} €</del>
-                <strong>{s.promo} €</strong>
+                <span className="price-caption">Studio-Preis</span>
+                <strong>{s.price} €</strong>
               </div>
-              <span className="promo-badge">
-                <Gift size={15} /> 30% Weihnachts- &amp; Neujahrsrabatt
-              </span>
+              <span className="studio-price-badge"><Sparkles size={15}/> Brow Beauty in Hildesheim</span>
             </div>
           </a>
         ))}
       </div>
       <p className="visual-note">
-        Die Preise und die Weihnachtsaktion stammen aus dem Designentwurf und
-        sind noch nicht als aktuelle Angebote bestätigt.
+        Aktuelle Preise laut Studio. Teilweise KI-generierte Illustrationsbilder.
       </p>
     </section>
   );
@@ -1021,7 +1005,7 @@ function Booking({ picked }) {
             required
           >
             <option value="">Bitte Leistung auswählen</option>
-            {SERVICES.map((s) => (
+            {[...SERVICES, COMBO_SERVICE].map((s) => (
               <option key={s.id} value={s.name}>
                 {s.name}
               </option>

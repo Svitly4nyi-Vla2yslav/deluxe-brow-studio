@@ -458,3 +458,33 @@ main{background:radial-gradient(ellipse at 50% 10%,#35231a 0%,#21140f 32%,#110b0
 @media(prefers-reduced-motion:reduce){
   .reels-marquee{overflow-x:auto;mask-image:none;-webkit-mask-image:none}
 }
+
+/* Real studio price list, without unverified crossed-out prices or discount labels. */
+.service-pricing{justify-content:center;gap:clamp(10px,3vw,38px);border-color:#dca864}
+.service-pricing .service-price-label{font:italic 500 clamp(19px,2vw,29px) 'Cormorant Garamond',Georgia,serif;color:#f3d5ac}
+.service-pricing .service-current-price{font:italic 500 clamp(37px,4vw,65px) 'Cormorant Garamond',Georgia,serif;color:#ffdc99;text-shadow:0 0 13px #e2a65970}
+.service-pricing .service-price-decoration{color:#e6b26d;flex-shrink:0}
+.price-values{justify-content:center;flex-wrap:wrap;align-items:center}
+.price-values .price-caption{font:italic 500 clamp(17px,2vw,24px) 'Cormorant Garamond',Georgia,serif;color:#e2bd8d}
+.studio-price-badge{display:inline-flex;gap:7px;align-items:center;padding:8px 12px;background:#51331eb0;border:1px solid #dba45b;border-radius:50px;color:#f0d0a5;font:15px 'Cormorant Garamond',Georgia,serif}
+@media(min-width:1024px){
+ .price-list{grid-template-columns:repeat(4,minmax(0,1fr));max-width:1280px;gap:18px}
+ .price-row img{height:210px}
+ .price-row h3{font-size:clamp(21px,2.1vw,30px);min-height:82px}
+ .price-values strong{font-size:47px}
+ .studio-price-badge{font-size:12px}
+ .service-detail .service-pricing .service-current-price{font-size:clamp(34px,3.3vw,46px)}
+ .service-detail .service-pricing .service-price-label{font-size:22px}
+}
+@media(min-width:701px) and (max-width:1023px){.price-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){
+ .price-list{grid-template-columns:1fr;max-width:500px}
+ .price-row{grid-template-columns:32% 1fr;display:grid;gap:12px;text-align:left;padding:10px;align-items:center}
+ .price-row img{height:135px;border-radius:16px}
+ .price-row h3{min-height:0;font-size:24px}
+ .price-values{justify-content:flex-start;margin:7px 0;gap:12px}
+ .price-values strong{font-size:37px}
+ .studio-price-badge{font-size:12px}
+ .service-pricing .service-current-price{font-size:38px}
+ .service-pricing .service-price-decoration{width:20px}
+}
