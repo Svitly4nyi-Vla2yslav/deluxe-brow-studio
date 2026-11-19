@@ -446,3 +446,15 @@ main{background:radial-gradient(ellipse at 50% 10%,#35231a 0%,#21140f 32%,#110b0
  .reels-track{animation:none}
  .reels-marquee{overflow-x:auto;mask-image:none;-webkit-mask-image:none}
 }
+
+/* JS-driven carousel: frame-time-independent and stable on desktop.
+   Override older animation declarations so the two engines never conflict. */
+.reels-marquee .reels-track.reels-track-js{
+  animation:none!important;
+  transform:translate3d(0,0,0);
+  will-change:transform;
+}
+.reels-marquee .reel-video{object-fit:contain}
+@media(prefers-reduced-motion:reduce){
+  .reels-marquee{overflow-x:auto;mask-image:none;-webkit-mask-image:none}
+}

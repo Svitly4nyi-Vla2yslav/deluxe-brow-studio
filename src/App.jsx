@@ -465,149 +465,155 @@ const ORIGINAL_REELS = [
     label: "Deluxe Beauty",
   },
 ];
-function OriginalReelCard({ item, duplicate = false }) {
-  const videoRef = useRef(null);
-  const cardRef = useRef(null);
-  const [inView, setInView] = useState(false);
-  const [soundOn, setSoundOn] = useState(false);
-  const [error, setError] = useState(false);
-  useEffect(() => {
-    const card = cardRef.current;
-    if (!card) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setInView(
-          entry.isIntersecting &&
-            entry.intersectionRatio > 0.2 &&
-            !document.hidden,
-        );
-      },
-      { threshold: [0, 0.2, 0.55] },
-    );
+function OriginalReelCard({item,duplicate=false}) {
+  const videoRef=useRef(null);
+  const cardRef=useRef(null);
+  const [inView,setInView]=useState(false);
+  const [soundOn,setSoundOn]=useState(false);
+  const [mediaError,setMediaError]=useState(false);
+  const id=item.src.match(/deluxe-(\d\d)/)?.[1];
+  // MP4/H.264 is more reliable for Android hardware decoders than VP9 WebM.
+  const mp4='/videos/deluxe-'+id+'.mp4';
+  const webm='/videos/deluxe-'+id+'.webm';
+  useEffect(()=>{
+    const card=cardRef.current;
+    if(!card)return;
+    const checkVisibility=()=>{
+      const r=card.getBoundingClientRect();
+      const width=Math.max(0,Math.min(r.right,window.innerWidth)-Math.max(r.left,0));
+      const height=Math.max(0,Math.min(r.bottom,window.innerHeight)-Math.max(r.top,0));
+      const visible=width>=Math.min(48,r.width*.22)&&height>=Math.min(70,r.height*.22);
+      setInView(visible&&!document.hidden);
+    };
+    const observer=new IntersectionObserver(checkVisibility,{threshold:[0,.1,.2,.35,.6]});
     observer.observe(card);
-    const handleVisibility = () => {
-      if (document.hidden) {
-        setInView(false);
-        return;
-      }
-      const r = card.getBoundingClientRect();
-      setInView(
-        r.right > 0 &&
-          r.left < window.innerWidth &&
-          r.bottom > 0 &&
-          r.top < window.innerHeight,
-      );
-    };
-    document.addEventListener("visibilitychange", handleVisibility);
-    return () => {
-      observer.disconnect();
-      document.removeEventListener("visibilitychange", handleVisibility);
-    };
-  }, []);
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.muted = !soundOn;
-    if (inView) {
-      const maybe = v.play();
-      if (maybe && typeof maybe.catch === "function") maybe.catch(() => {});
-    } else {
+    document.addEventListener('visibilitychange',checkVisibility);
+    window.addEventListener('resize',checkVisibility,{passive:true});
+    checkVisibility();
+    return()=>{observer.disconnect();document.removeEventListener('visibilitychange',checkVisibility);window.removeEventListener('resize',checkVisibility)};
+  },[]);
+  // Don't download, buffer or decode a video while it is outside the viewport.
+  useEffect(()=>{
+    const v=videoRef.current;
+    if(!v)return;
+    if(!inView){
       v.pause();
+      v.removeAttribute('src');
+      // source elements are absent when the card is asleep; load() releases decoders.
+      v.load();
+      return;
     }
-  }, [inView, soundOn]);
-  return (
-    <article className="reel-card original-reel-card" ref={cardRef}>
-      <div className="reel-frame">
-        <video
-          ref={videoRef}
-          className="reel-video"
-          src={inView ? item.src : undefined}
-          poster={item.poster}
-          playsInline
-          autoPlay
-          muted
-          loop
-          preload="none"
-          aria-label={"Deluxe Brow Studio – " + item.title}
-          onError={() => setError(true)}
-          onLoadedData={() => setError(false)}
-        />
-        {error && (
-          <div className="reel-video-error" role="status">
-            Video derzeit nicht verfügbar
-          </div>
-        )}
-        <button
-          type="button"
-          className="reel-sound"
-          onClick={() => setSoundOn((old) => !old)}
-          aria-label={
-            soundOn
-              ? "Ton ausschalten: " + item.title
-              : "Ton einschalten: " + item.title
-          }
-          aria-pressed={soundOn}
-          tabIndex={duplicate ? -1 : 0}
-        >
-          {soundOn ? <Volume2 size={19} /> : <VolumeX size={19} />}
-          <span>{soundOn ? "Ton an" : "Ton aus"}</span>
-        </button>
-      </div>
-      <div className="reel-card-copy">
-        <h3>{item.label}</h3>
-      </div>
-    </article>
-  );
+    v.defaultMuted=true;
+    v.muted=!soundOn;
+    v.load();
+    const play=()=>{
+      if(!document.hidden && inView){
+        v.muted=!soundOn;
+        const p=v.play();
+        if(p?.catch)p.catch(()=>{}); // Browsers can block playback; poster remains.
+      }
+    };
+    v.addEventListener('canplay',play);
+    play();
+    return()=>v.removeEventListener('canplay',play);
+  },[inView]); // Reload only on entering/leaving, not for sound-button clicks.
+  useEffect(()=>{
+    const v=videoRef.current;
+    if(!v)return;
+    v.muted=!soundOn;
+    if(inView && !document.hidden) {
+      const p=v.play();
+      if(p?.catch)p.catch(()=>{});
+    }
+  },[soundOn,inView]);
+  return <article ref={cardRef} className="reel-card original-reel-card">
+    <div className="reel-frame">
+      <video ref={videoRef} className="reel-video"
+        poster={item.poster} muted playsInline loop preload="none"
+        aria-label={'Deluxe Brow Studio – '+item.title}
+        onError={()=>setMediaError(true)} onLoadedData={()=>setMediaError(false)}>
+        {inView && <>
+          <source src={mp4} type="video/mp4"/>
+          <source src={webm} type="video/webm"/>
+        </>}
+      </video>
+      {mediaError && <div className="reel-video-error" role="status">Video derzeit nicht verfügbar</div>}
+      <button type="button" className="reel-sound" tabIndex={duplicate?-1:0}
+        onClick={()=>setSoundOn(s=>!s)} aria-pressed={soundOn}
+        aria-label={soundOn?'Ton ausschalten: '+item.title:'Ton einschalten: '+item.title}>
+        {soundOn?<Volume2 size={19}/>:<VolumeX size={19}/>}
+        <span>{soundOn?'Ton an':'Ton aus'}</span>
+      </button>
+    </div>
+    <div className="reel-card-copy"><h3>{item.label}</h3></div>
+  </article>;
 }
 function StudioReels() {
-  const [holding, setHolding] = useState(false);
-  useEffect(() => {
-    const release = () => setHolding(false);
-    window.addEventListener("pointerup", release);
-    window.addEventListener("pointercancel", release);
-    window.addEventListener("blur", release);
-    return () => {
-      window.removeEventListener("pointerup", release);
-      window.removeEventListener("pointercancel", release);
-      window.removeEventListener("blur", release);
+  const sectionRef=useRef(null);
+  const trackRef=useRef(null);
+  const firstSetRef=useRef(null);
+  const held=useRef(false);
+  useEffect(()=>{
+    const track=trackRef.current,section=sectionRef.current,first=firstSetRef.current;
+    if(!track||!section||!first)return;
+    const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
+    let frame=0,previous=0,offset=0,groupWidth=0,sectionVisible=false;
+    const updateWidth=()=>{
+      groupWidth=first.getBoundingClientRect().width;
+      if(groupWidth>0){
+        offset=offset%groupWidth;
+        track.style.transform='translate3d('+(-groupWidth+offset)+'px,0,0)';
+      }
     };
-  }, []);
-  return (
-    <section
-      className="studio-reels"
-      id="reels"
-      aria-labelledby="studio-reels-heading"
-    >
-      <SectionLabel>EINBLICKE IN UNSERE ARBEIT</SectionLabel>
-      <h2 id="studio-reels-heading">Beauty in Bewegung</h2>
-      <p className="italic-subtitle">Sieben echte Momente aus dem Studio.</p>
-      <Divider />
-      <div
-        className={"reels-marquee" + (holding ? " is-paused" : "")}
-        onPointerDown={() => setHolding(true)}
-        onPointerCancel={() => setHolding(false)}
-        aria-label="Sieben Originalvideos, automatisch nach rechts laufend"
-      >
-        <div className="reels-track">
-          {[0, 1].map((copy) => (
-            <div
-              className="reels-set"
-              key={copy}
-              aria-hidden={copy === 1 ? "true" : undefined}
-            >
-              {ORIGINAL_REELS.map((item, i) => (
-                <OriginalReelCard item={item} key={i} duplicate={copy === 1} />
-              ))}
-            </div>
-          ))}
-        </div>
+    const resize=new ResizeObserver(updateWidth);
+    resize.observe(first);
+    const observer=new IntersectionObserver(([entry])=>{
+      sectionVisible=entry.isIntersecting;
+    },{threshold:0});
+    observer.observe(section);
+    const release=()=>{held.current=false};
+    const onHide=()=>{previous=0};
+    const tick=time=>{
+      const delta=previous?Math.min(50,time-previous):0;
+      previous=time;
+      if(groupWidth>0&&sectionVisible&&!document.hidden&&!held.current&&!reduceMotion.matches){
+        // Real distance-based movement on mobile AND desktop, independent of CSS animation settings.
+        const speed=window.innerWidth<740?12:18; // pixels/second, calm luxury motion
+        offset=(offset+delta*speed/1000)%groupWidth;
+        track.style.transform='translate3d('+(-groupWidth+offset)+'px,0,0)';
+      }
+      frame=requestAnimationFrame(tick);
+    };
+    updateWidth();
+    frame=requestAnimationFrame(tick);
+    window.addEventListener('pointerup',release);
+    window.addEventListener('pointercancel',release);
+    window.addEventListener('blur',release);
+    document.addEventListener('visibilitychange',onHide);
+    return()=>{
+      cancelAnimationFrame(frame);resize.disconnect();observer.disconnect();
+      window.removeEventListener('pointerup',release);
+      window.removeEventListener('pointercancel',release);
+      window.removeEventListener('blur',release);
+      document.removeEventListener('visibilitychange',onHide);
+    };
+  },[]);
+  return <section ref={sectionRef} className="studio-reels" id="reels" aria-labelledby="studio-reels-heading">
+    <SectionLabel>EINBLICKE IN UNSERE ARBEIT</SectionLabel>
+    <h2 id="studio-reels-heading">Beauty in Bewegung</h2>
+    <p className="italic-subtitle">Sieben echte Momente aus dem Studio.</p>
+    <Divider/>
+    <div className="reels-marquee" onPointerDown={()=>{held.current=true}} onPointerCancel={()=>{held.current=false}}
+      aria-label="Sieben Originalvideos, automatisch nach rechts laufend">
+      <div ref={trackRef} className="reels-track reels-track-js">
+        {[0,1].map(copy=><div className="reels-set" ref={copy===0?firstSetRef:undefined} key={copy}
+          aria-hidden={copy===1?'true':undefined}>
+          {ORIGINAL_REELS.map((item,i)=><OriginalReelCard item={item} duplicate={copy===1} key={i}/>)}
+        </div>)}
       </div>
-      <p className="reels-note">
-        Die Videos laufen automatisch und ohne Ton. Jedes Video hat einen
-        eigenen Ton-Schalter. Zum Anhalten berühren.
-      </p>
-    </section>
-  );
+    </div>
+    <p className="reels-note">Videos starten nur im sichtbaren Bereich, automatisch ohne Ton. Jedes Video hat einen eigenen Ton-Schalter. Zum Anhalten berühren.</p>
+  </section>;
 }
 
 function About({ openImage }) {
