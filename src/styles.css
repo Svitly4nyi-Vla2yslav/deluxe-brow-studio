@@ -361,3 +361,51 @@ main{background:radial-gradient(ellipse at 50% 10%,#35231a 0%,#21140f 32%,#110b0
     overflow-x:hidden;
   }
 }
+
+
+/* Two original studio reels: side-by-side, each independently unmuted.
+   The observer starts/stops playback without forcing audio or blocking scrolling. */
+.studio-reels{
+ padding:clamp(70px,8vw,125px) 16px;
+ background:radial-gradient(ellipse at 50% 25%,#432a1b,#140b08 70%,#0c0807);
+ text-align:center;overflow:hidden;
+}
+.studio-reels>.section-label{display:flex;align-items:center;justify-content:center;gap:14px;
+ font-size:clamp(10px,1.6vw,15px);letter-spacing:.25em;color:#ebc17d;margin:0 auto 18px}
+.studio-reels>.section-label span{height:1px;width:min(12vw,90px);background:#d7a05c}
+.studio-reels>h2{font-size:clamp(46px,6vw,90px)}
+.studio-reels>.heart-divider{margin:16px auto 30px;max-width:390px}
+.reels-grid{width:min(100%,880px);margin:0 auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(10px,3vw,35px);align-items:start}
+.reel-card{min-width:0;overflow:hidden;border:1px solid #b8864c;
+ background:linear-gradient(145deg,#483020,#180e0b);border-radius:clamp(16px,2.5vw,27px);
+ box-shadow:0 0 18px #ad743c55,inset 0 1px 3px #f8d79b50}
+.reel-frame{width:100%;aspect-ratio:9/16;position:relative;overflow:hidden;background:#100b09}
+.reel-video{display:block;width:100%;height:100%;object-fit:contain;background:#0a0807}
+.reel-visual-top{position:absolute;top:10px;left:10px;right:10px;display:flex;align-items:center;
+ gap:5px;color:#ffe5b6;font-size:clamp(7px,.9vw,11px);font-weight:600;letter-spacing:.12em;
+ text-shadow:0 1px 5px #000,0 0 10px #000;pointer-events:none}
+.reel-visual-top svg{width:clamp(12px,1.4vw,18px)}
+.reel-sound{position:absolute;bottom:14px;right:12px;display:flex;align-items:center;
+ gap:7px;min-width:42px;min-height:42px;padding:9px 13px;color:#ffe2ae;
+ background:rgba(11,7,5,.8);border:1px solid #e1ad69;border-radius:40px;
+ box-shadow:0 0 14px #110a06b6;transition:background-color .8s,box-shadow .8s}
+.reel-sound:hover,.reel-sound:focus-visible{background:#5d3923;box-shadow:0 0 15px #dfad6388}
+.reel-sound span{font-size:12px}
+.reel-video-error{position:absolute;inset:0;background:#120c0acc;display:grid;
+ place-items:center;padding:18px;color:#f8dfbd;font-size:13px}
+.reel-card-copy{padding:18px 12px 22px}
+.reel-card-copy h3{font:italic 500 clamp(23px,2.8vw,34px) 'Cormorant Garamond',Georgia,serif;color:#f6c982}
+.reel-card-copy p{font-size:clamp(10px,1.3vw,13px);line-height:1.6;color:#eed4b0;margin-top:5px}
+.reels-note{font:italic clamp(14px,2vw,18px)/1.4 'Cormorant Garamond',serif;
+ color:#d2b18b;max-width:620px;margin:27px auto 0}
+@media(max-width:740px){
+ .studio-reels{padding:76px 10px}
+ .reels-grid{gap:10px}
+ .reel-visual-top{top:8px;left:7px;right:7px;letter-spacing:.02em}
+ .reel-sound{right:7px;bottom:7px;min-width:34px;min-height:34px;padding:6px 7px}
+ .reel-sound svg{width:16px}
+ .reel-sound span{font-size:10px}
+ .reel-card-copy{padding:12px 7px 15px}
+ .reel-card-copy h3{font-size:23px}
+ .reel-card-copy p{font-size:10px}
+}

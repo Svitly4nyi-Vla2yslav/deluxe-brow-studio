@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { CalendarDays, Menu, X, Instagram, ArrowRight, ChevronLeft, ChevronRight, MapPin, Diamond, Heart, Sparkles, Gift, Clock3, Feather, Layers, Droplets, Target, UserRound, Mail, Send, CheckCircle2, Maximize2 } from 'lucide-react';
+import { CalendarDays, Menu, X, Instagram, ArrowRight, ChevronLeft, ChevronRight, MapPin, Diamond, Heart, Sparkles, Gift, Clock3, Feather, Layers, Droplets, Target, UserRound, Mail, Send, CheckCircle2, Maximize2, Volume2, VolumeX, Film } from 'lucide-react';
 import './styles.css';
 
 const IG = 'https://www.instagram.com/deluxe.browstudio/';
@@ -104,9 +104,78 @@ function Marquee({items,kind='services',onImageClick}){
  </div>;
 }
 function Services({openImage}){
- const items=SERVICES.flatMap(s=>s.images.map(src=>({src,label:s.name,generated:true})));
+ const items=[
+  ...SERVICES.flatMap(s=>s.images.map(src=>({src,label:s.name,generated:true}))),
+  {src:'/images/studio-client-3089.jpg',label:'Brow Styling · Originalfoto',generated:false},
+  {src:'/images/studio-client-3389.jpg',label:'Brow Styling · Originalfoto',generated:false}
+ ];
  return <section className="services-intro" id="services"><h2>Unsere Leistungen</h2><p className="italic-subtitle">Luxuriöse Behandlungen für perfekt geformte, ausdrucksstarke und gepflegte Brows.</p><Divider/><Marquee items={items} onImageClick={openImage}/><p className="carousel-hint">Automatisch gleitend · per Finger anhalten · antippen zum Vergrößern</p><GoldButton>Termin buchen</GoldButton><GoldButton outline href={IG}><Instagram size={18}/> Instagram ansehen</GoldButton></section>
 }
+function ReelCard({src,poster,title,description,active}){
+ const videoRef=useRef(null);
+ const [soundOn,setSoundOn]=useState(false);
+ const [mediaError,setMediaError]=useState(false);
+ useEffect(()=>{
+  const video=videoRef.current;
+  if(!video)return;
+  video.muted=!soundOn;
+  if(active){
+   const promise=video.play();
+   if(promise&&typeof promise.catch==='function')promise.catch(()=>{});
+  } else {
+   video.pause();
+  }
+ },[active,soundOn]);
+ return <article className="reel-card">
+  <div className="reel-frame">
+   <video ref={videoRef} className="reel-video" src={src} poster={poster}
+    muted playsInline loop preload="metadata"
+    aria-label={title} onError={()=>setMediaError(true)}
+    onLoadedData={()=>setMediaError(false)}/>
+   <div className="reel-visual-top" aria-hidden="true"><Film size={18}/> DELUXE BROW STUDIO</div>
+   {mediaError&&<div className="reel-video-error" role="status">Video derzeit nicht verfügbar</div>}
+   <button type="button" className="reel-sound" onClick={()=>setSoundOn(v=>!v)}
+    aria-label={soundOn?'Ton für '+title+' ausschalten':'Ton für '+title+' einschalten'}
+    aria-pressed={soundOn}>
+    {soundOn?<Volume2 size={20}/>:<VolumeX size={20}/>}
+    <span>{soundOn?'Ton an':'Ton aus'}</span>
+   </button>
+  </div>
+  <div className="reel-card-copy"><h3>{title}</h3><p>{description}</p></div>
+ </article>
+}
+function StudioReels(){
+ const sectionRef=useRef(null);
+ const [visible,setVisible]=useState(false);
+ useEffect(()=>{
+  const section=sectionRef.current;
+  if(!section || typeof IntersectionObserver==='undefined')return;
+  const observer=new IntersectionObserver(([entry])=>{
+   setVisible(entry.isIntersecting&&entry.intersectionRatio>=0.25&&!document.hidden);
+  },{threshold:[0,0.25,0.5]});
+  observer.observe(section);
+  const onVisibility=()=>{if(document.hidden)setVisible(false);else{
+   const rect=section.getBoundingClientRect();
+   setVisible(rect.top<window.innerHeight*.75&&rect.bottom>window.innerHeight*.25);
+  }};
+  document.addEventListener('visibilitychange',onVisibility);
+  return ()=>{observer.disconnect();document.removeEventListener('visibilitychange',onVisibility)};
+ },[]);
+ return <section ref={sectionRef} className="studio-reels" id="reels" aria-labelledby="studio-reels-heading">
+  <SectionLabel>EINBLICKE IN UNSERE ARBEIT</SectionLabel>
+  <h2 id="studio-reels-heading">Beauty in Bewegung</h2>
+  <p className="italic-subtitle">Einblicke, besondere Momente und pure Brow-Liebe.</p>
+  <Divider/>
+  <div className="reels-grid">
+   <ReelCard src="/videos/deluxe-slow-luxury.mp4" poster="/images/studio-client-3089.jpg"
+    title="Slow Luxury" description="Sanfte Momente im Deluxe Brow Studio" active={visible}/>
+   <ReelCard src="/videos/deluxe-brow-reel.mp4" poster="/images/studio-client-3389.jpg"
+    title="Brow Moments" description="Ein besonderer Blick auf unsere Arbeit" active={visible}/>
+  </div>
+  <p className="reels-note">Beide Videos starten automatisch und lautlos, sobald du diesen Bereich erreichst. Den Ton kannst du pro Video einschalten.</p>
+ </section>;
+}
+
 function About({openImage}){
  const items=[{src:IMG.hero,label:'Brow Artist',generated:false},{src:IMG.artist,label:'Anastasia',generated:false},{src:IMG.tools,label:'Studio',generated:false},{src:'/images/correction-1.jpg',label:'Brow Look (KI)',generated:true},{src:'/images/tint-2.jpg',label:'Beauty Details (KI)',generated:true}];
  return <section id="about" className="about-section"><div className="about-card glow-panel"><img src={IMG.artist} loading="lazy" alt="Anastasia, Brow Artist im Deluxe Brow Studio"/><div><h2>Über<br/>Anastasia</h2><Divider/><p>Hallo, ich bin Anastasia, Brow Artist mit Leidenschaft für perfekt geformte, natürliche Augenbrauen.</p></div></div><div className="about-chips"><span><UserRound/> Brow Artist</span><span><Diamond/> Studio</span><span><Layers/> Arbeiten</span><span><MapPin/> Hildesheim</span></div><div id="instagram" className="instagram-section"><h2>Instagram</h2><Divider/><Marquee items={items} kind="instagram" duration="112s" onImageClick={openImage}/><GoldButton href={IG}><Instagram size={18}/> Instagram ansehen <ArrowRight size={18}/></GoldButton></div></section>
@@ -172,5 +241,5 @@ function Footer(){return <footer id="contact" className="site-footer">
  </footer>}
 export default function App(){
  const[lightbox,setLightbox]=useState(null),[selectedService,setSelectedService]=useState('');
- return <><Header/><main><Hero/><Services openImage={setLightbox}/><About openImage={setLightbox}/>{SERVICES.map(s=><ServiceSection key={s.id} service={s} onBook={setSelectedService}/>)}<Prices onBook={setSelectedService}/><Vouchers/><Booking picked={selectedService}/><Footer/></main>{lightbox&&<Lightbox item={lightbox} onClose={()=>setLightbox(null)}/>}</>
+ return <><Header/><main><Hero/><Services openImage={setLightbox}/><StudioReels/><About openImage={setLightbox}/>{SERVICES.map(s=><ServiceSection key={s.id} service={s} onBook={setSelectedService}/>)}<Prices onBook={setSelectedService}/><Vouchers/><Booking picked={selectedService}/><Footer/></main>{lightbox&&<Lightbox item={lightbox} onClose={()=>setLightbox(null)}/>}</>
 }
