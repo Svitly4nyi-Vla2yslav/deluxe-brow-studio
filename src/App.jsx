@@ -475,6 +475,9 @@ function OriginalReelCard({item,duplicate=false}) {
   // MP4/H.264 is more reliable for Android hardware decoders than VP9 WebM.
   const mp4='/videos/deluxe-'+id+'.mp4';
   const webm='/videos/deluxe-'+id+'.webm';
+  const mobileMp4='/videos/deluxe-'+id+'-mobile.mp4';
+  // Small H.264 Baseline videos are prioritized on touch devices / small displays.
+  const mobilePlayback=window.matchMedia('(max-width: 900px), (pointer: coarse)').matches;
   useEffect(()=>{
     const card=cardRef.current;
     if(!card)return;
@@ -497,6 +500,7 @@ function OriginalReelCard({item,duplicate=false}) {
     const v=videoRef.current;
     if(!v)return;
     if(!inView){
+      setMediaError(false);
       v.pause();
       v.removeAttribute('src');
       // source elements are absent when the card is asleep; load() releases decoders.
@@ -531,8 +535,9 @@ function OriginalReelCard({item,duplicate=false}) {
       <video ref={videoRef} className="reel-video"
         poster={item.poster} muted playsInline loop preload="none"
         aria-label={'Deluxe Brow Studio – '+item.title}
-        onError={()=>setMediaError(true)} onLoadedData={()=>setMediaError(false)}>
+        onError={()=>{if(inView)setMediaError(true)}} onLoadedData={()=>setMediaError(false)}>
         {inView && <>
+          {mobilePlayback && <source src={mobileMp4} type="video/mp4"/>}
           <source src={mp4} type="video/mp4"/>
           <source src={webm} type="video/webm"/>
         </>}
