@@ -1,0 +1,52 @@
+name: Optimize Deluxe video for low-memory Android phones
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/optimize-reels-mobile.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  encode:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install FFmpeg
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+      - name: Encode seven lightweight mobile MP4s
+        shell: bash
+        run: |
+          set -euo pipefail
+          for n in 01 02 03 04 05 06 07; do
+            input="public/videos/deluxe-${n}.mp4"
+            output="public/videos/deluxe-${n}-mobile.mp4"
+            test -s "$input"
+            # Never stretch or crop: height is derived from original dimensions.
+            # H.264 Baseline + yuv420p and AAC work on older Android browsers.
+            ffmpeg -hide_banner -loglevel error -nostdin -y -i "$input" \
+              -map 0:v:0 -map 0:a:0? \
+              -vf "scale='min(420,iw)':-2:flags=bicubic,fps=24" \
+              -c:v libx264 -preset veryfast -profile:v baseline -level 3.0 \
+              -crf 29 -maxrate 550k -bufsize 1100k -pix_fmt yuv420p \
+              -c:a aac -b:a 80k -ac 2 -ar 44100 \
+              -movflags +faststart "$output"
+            ffprobe -v error -select_streams v:0 -show_entries stream=codec_name,width,height \
+              -of default=noprint_wrappers=1 "$output"
+            du -h "$input" "$output"
+          done
+      - name: Commit optimized video assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/videos/deluxe-0*-mobile.mp4
+          if ! git diff --cached --quiet; then
+            git commit -m "assets: add seven low-memory mobile H.264 reels"
+            git push origin HEAD:main
+          fi
